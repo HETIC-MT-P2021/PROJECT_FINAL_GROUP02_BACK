@@ -20,11 +20,11 @@ Your branch must be create from Pre-Prod using the following syntax :
 
 - If it’s a new feature :
 
-** feat/Name-of-the-Feature **
+> feat/Name-of-the-Feature 
 
 - If it’s a bug fix :
 
-** fix/Name-of-the-Fix **
+> fix/Name-of-the-Fix 
 
 ### Commit standards
 
@@ -47,7 +47,7 @@ The different types are:
 
 Your PR need to have the following nomenclature:
 
-> "[Type]: #[Issue] Name-of-the-PR
+> "[Type]: #[Issue] Name-of-the-PR"
 
 Where the types are the same as the one used for the comits.
 
