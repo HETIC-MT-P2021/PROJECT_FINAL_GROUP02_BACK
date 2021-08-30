@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  go:
+    container_name: "go-back-end"
+    build: .
+    volumes:
+      - ".:/go/src"
+    ports:
+      - "8000:8000"
+    tty: true
+    stdin_open: true
+    environment:
+      DB_USER: root
+      DB_PASSWORD: rootpwd
+      DB_HOST: api-database
+      DB_PORT: 5432
+      DB_NAME: root
+    depends_on:
+      - api-database
+
+  api-database:
+    image: postgres:11-alpine
+    restart: always
+    container_name: go-postgres
+    environment:
+      POSTGRES_DATABASE: root
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: rootpwd
+    ports:
+      - "5432:5432"
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
