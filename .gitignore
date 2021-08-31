@@ -1,0 +1,18 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+.env
+.idea
+.DS_Store
+
+# To push the folder with correct permissions but skip it's content
+postgres-data
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+.env
+
+tmp

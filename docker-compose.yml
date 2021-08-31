@@ -1,37 +1,38 @@
 version: "3"
 
 services:
-  go:
-    container_name: "go-back-end"
-    build: .
-    volumes:
-      - ".:/go/src"
-    ports:
-      - "8000:8000"
-    tty: true
-    stdin_open: true
-    environment:
-      DB_USER: root
-      DB_PASSWORD: rootpwd
-      DB_HOST: api-database
-      DB_PORT: 5432
-      DB_NAME: root
-    depends_on:
-      - api-database
-
-  api-database:
-    image: postgres:11-alpine
+  postgres:
+    image: postgres:13-alpine
+    container_name: postgres_db
     restart: always
-    container_name: go-postgres
     environment:
-      POSTGRES_DATABASE: root
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: rootpwd
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_DB: "${DB_NAME}"
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+      - ./postgres-data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - ${POSTGRES_PORT}:5432
 
   adminer:
     image: adminer
     restart: always
     ports:
-      - 8080:8080
+      - "${ADMINER_PORT}:${ADMINER_DOCKER_PORT}"
+
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    env_file: .env
+    environment:
+      GIN_MODE: "release"
+    volumes:
+      - .:/app
+    working_dir: /app
+    ports:
+      - "${API_PORT}:${DOCKER_API_PORT}"
+    command: go run main.go
+    links:
+      - postgres

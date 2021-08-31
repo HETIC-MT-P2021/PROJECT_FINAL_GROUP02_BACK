@@ -34,7 +34,6 @@ func main() {
 	fmt.Println(cfg)
 
 	database.Connect(cfg)
-	database.MakeMigrations()
 
 	// Create a new Discord session using the provided bot token.
 
