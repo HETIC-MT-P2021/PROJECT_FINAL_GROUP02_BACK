@@ -14,7 +14,7 @@ func GetCharacterById(id string) (*game.PlayerChar, error) {
 	charRow := database.DB.QueryRow("SELECT * FROM characters WHERE id=$1", id)
 
 	selectedCharacter := game.PlayerChar{}
-	switch err := charRow.Scan(&selectedCharacter.Id, &selectedCharacter.Name, &selectedCharacter.Player, &selectedCharacter.WeaponSkill, &selectedCharacter.BalisticSkill, &selectedCharacter.Strength, &selectedCharacter.Endurance, &selectedCharacter.Agility, &selectedCharacter.Willpower, &selectedCharacter.Fellowship, &selectedCharacter.Hitpoints, &selectedCharacter.IsCharAlive); err {
+	switch err := charRow.Scan(&selectedCharacter.Id, &selectedCharacter.Name, &selectedCharacter.Player, &selectedCharacter.Precision, &selectedCharacter.Strength, &selectedCharacter.Toughness, &selectedCharacter.Agility, &selectedCharacter.Hitpoints, &selectedCharacter.IsCharAlive); err {
 	case sql.ErrNoRows:
 		return &selectedCharacter, errors.New("Character not found")
 	case nil:
@@ -28,7 +28,7 @@ func GetBattleCharacterById(id string) (*game.CharBattle, error) {
 	charRow := database.DB.QueryRow("SELECT * FROM battlechars WHERE id=$1;", id)
 
 	selectedCharacter := game.CharBattle{}
-	err := charRow.Scan(&selectedCharacter.Id, &selectedCharacter.Name, &selectedCharacter.Player, &selectedCharacter.WeaponSkill, &selectedCharacter.BalisticSkill, &selectedCharacter.Strength, &selectedCharacter.Endurance, &selectedCharacter.Agility, &selectedCharacter.Willpower, &selectedCharacter.Fellowship, &selectedCharacter.Hitpoints, &selectedCharacter.IsFighting, &selectedCharacter.IsDodging, &selectedCharacter.IsFleeing)
+	err := charRow.Scan(&selectedCharacter.Id, &selectedCharacter.Name, &selectedCharacter.Player, &selectedCharacter.Precision, &selectedCharacter.Strength, &selectedCharacter.Toughness, &selectedCharacter.Agility, &selectedCharacter.Hitpoints, &selectedCharacter.IsFighting, &selectedCharacter.IsDodging, &selectedCharacter.IsFleeing)
 	if err != nil {
 		fmt.Println(err.Error())
 		return &selectedCharacter, errors.New("Character not found")

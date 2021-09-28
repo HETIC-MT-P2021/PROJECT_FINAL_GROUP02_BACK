@@ -19,8 +19,8 @@ func FightOptionsInfo(s *discordgo.Session, channedId string) {
 
 	_, err = s.ChannelMessageSendEmbed(channedId, &discordgo.MessageEmbed{
 		Title: fmt.Sprintln(activePlayer.Name, ", it is your turn to play"),
-		Description: fmt.Sprintln("```--fight Attack will do a Weaponskill test in order to hit your opponent",
-			"\n-fight Dodge will do a Weaponskill test divided by 2 in order to hit, but will allow you to do a Dodge test if you get hit this turn",
+		Description: fmt.Sprintln("```--fight Attack will do a Precision test in order to hit your opponent",
+			"\n-fight Dodge will do a Precision test divided by 2 in order to hit, but will allow you to do a Dodge test if you get hit this turn",
 			"\n-fight Flee will do an Agility test to flee this battle, if failed, you opponent get a free attack on you"),
 		Color: 0x0099ff,
 		// Footer: &discordgo.MessageEmbedFooter{
