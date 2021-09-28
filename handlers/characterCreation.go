@@ -6,10 +6,10 @@ import (
 	"math/rand"
 	"strconv"
 
+	"github.com/SteakBarbare/RPGBot/connector"
 	"github.com/SteakBarbare/RPGBot/database"
 	"github.com/SteakBarbare/RPGBot/game"
 	"github.com/SteakBarbare/RPGBot/utils"
-	"github.com/SteakBarbare/RPGBot/connector"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -45,12 +45,9 @@ func NewCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 			Title: fmt.Sprintln("This is your character, **", m.Content, "** !\n Here are it's starting stats:"),
 			Description: fmt.Sprintln(
 				"**WeaponSkill:** ", strconv.Itoa(character.WeaponSkill),
-				"\n**BalisticSkill:** ", strconv.Itoa(character.BalisticSkill),
 				"\n**Strength:** ", strconv.Itoa(character.Strength),
 				"\n**Endurance:** ", strconv.Itoa(character.Endurance),
 				"\n**Agility:** ", strconv.Itoa(character.Agility),
-				"\n**Willpower:** ", strconv.Itoa(character.Willpower),
-				"\n**Fellowship:** ", strconv.Itoa(character.Fellowship),
 				"\n**Hitpoints:** ", strconv.Itoa(character.Hitpoints)),
 			Color: 0x00ff99,
 			Footer: &discordgo.MessageEmbedFooter{
@@ -63,15 +60,15 @@ func NewCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 			return
 		}
 
-		_, err = database.DB.Exec(`INSERT INTO characters(charName, player, weaponSkill, balisticSkill, strength, endurance, agility, willpower, fellowship, hitpoints, isCharAlive) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'true')`,
-			m.Content, m.Author.ID, character.WeaponSkill, character.BalisticSkill, character.Strength, character.Endurance, character.Agility, character.Willpower, character.Fellowship, character.Hitpoints)
+		_, err = database.DB.Exec(`INSERT INTO characters(charName, player, weaponSkill, strength, endurance, agility, hitpoints, isCharAlive) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'true')`,
+			m.Content, m.Author.ID, character.WeaponSkill, character.Strength, character.Endurance, character.Agility, character.Hitpoints)
 
 		if err != nil {
 			panic(err)
 		}
 
-		_, err = database.DB.Exec(`INSERT INTO battleChars(charName, player, weaponSkill, balisticSkill, strength, endurance, agility, willpower, fellowship, hitpoints, isFighting, isDodging, isFleeing) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'false', 'false', 'false')`,
-			m.Content, m.Author.ID, character.WeaponSkill, character.BalisticSkill, character.Strength, character.Endurance, character.Agility, character.Willpower, character.Fellowship, character.Hitpoints)
+		_, err = database.DB.Exec(`INSERT INTO battleChars(charName, player, weaponSkill, strength, endurance, agility, hitpoints, isFighting, isDodging, isFleeing) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'false', 'false', 'false')`,
+			m.Content, m.Author.ID, character.WeaponSkill, character.Strength, character.Endurance, character.Agility, character.Hitpoints)
 
 		if err != nil {
 			panic(err)
@@ -88,12 +85,9 @@ func statsGeneration(givenName string, author string) *game.PlayerChar {
 		Name:          givenName,
 		Player:        author,
 		WeaponSkill:   (rand.Intn(20) + 20),
-		BalisticSkill: (rand.Intn(20) + 20),
 		Strength:      (rand.Intn(20) + 20),
 		Endurance:     (rand.Intn(20) + 20),
 		Agility:       (rand.Intn(20) + 20),
-		Willpower:     (rand.Intn(20) + 20),
-		Fellowship:    (rand.Intn(20) + 20),
 		Hitpoints:     (rand.Intn(7) + 8)}
 
 	return &character

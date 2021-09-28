@@ -33,7 +33,7 @@ func ShowCharacters(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		createdCharacter := game.PlayerChar{}
 
-		if err := charRows.Scan(&createdCharacter.Id, &createdCharacter.Name, &createdCharacter.Player, &createdCharacter.WeaponSkill, &createdCharacter.BalisticSkill, &createdCharacter.Strength, &createdCharacter.Endurance, &createdCharacter.Agility, &createdCharacter.Willpower, &createdCharacter.Fellowship, &createdCharacter.Hitpoints, &createdCharacter.IsCharAlive); err != nil {
+		if err := charRows.Scan(&createdCharacter.Id, &createdCharacter.Name, &createdCharacter.Player, &createdCharacter.WeaponSkill, &createdCharacter.Strength, &createdCharacter.Endurance, &createdCharacter.Agility, &createdCharacter.Hitpoints, &createdCharacter.IsCharAlive); err != nil {
 
 			log.Fatal(err)
 
@@ -44,12 +44,9 @@ func ShowCharacters(s *discordgo.Session, m *discordgo.MessageCreate) {
 			Title: fmt.Sprintln("Name: **", createdCharacter.Name, "**"),
 			Description: fmt.Sprintln(
 				"**WeaponSkill:** ", strconv.Itoa(createdCharacter.WeaponSkill),
-				"\n**BalisticSkill:** ", strconv.Itoa(createdCharacter.BalisticSkill),
 				"\n**Strength:** ", strconv.Itoa(createdCharacter.Strength),
 				"\n**Endurance:** ", strconv.Itoa(createdCharacter.Endurance),
 				"\n**Agility:** ", strconv.Itoa(createdCharacter.Agility),
-				"\n**Willpower:** ", strconv.Itoa(createdCharacter.Willpower),
-				"\n**Fellowship:** ", strconv.Itoa(createdCharacter.Fellowship),
 				"\n**Hitpoints:** ", strconv.Itoa(createdCharacter.Hitpoints),
 				"\n**Still Alive:** ", createdCharacter.IsCharAlive),
 			Color: 0x0099ff,
