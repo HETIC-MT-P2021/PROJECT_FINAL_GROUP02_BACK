@@ -11,10 +11,10 @@ import (
 )
 
 // Main function, will run till either all characters are selected, an error has occured, or the selection is aborted
-func chooseCharacterBase(s *discordgo.Session, channelID string, involvedPlayers []string, lastPlayer int) {
+func selectCharacterBase(s *discordgo.Session, channelID string, involvedPlayers []string, lastPlayer int) {
 	if lastPlayer == 0 {
 		s.ChannelMessageSend(channelID, "Choose a character")
-		s.AddHandlerOnce(chooseCharacter)
+		s.AddHandlerOnce(selectCharacter)
 	} else {
 		s.ChannelMessageSend(channelID, "All Players are ready, starting duel !")
 		duels.DuelController(s, channelID, involvedPlayers)
@@ -22,7 +22,7 @@ func chooseCharacterBase(s *discordgo.Session, channelID string, involvedPlayers
 
 }
 
-func chooseCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
+func selectCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if m.Author.ID == s.State.User.ID {
 		return
@@ -30,7 +30,7 @@ func chooseCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Content == "-quit" {
 		s.ChannelMessageSend(m.ChannelID, "Aborting character selection")
 	} else if m.Content == "-char Show" {
-		s.AddHandlerOnce(chooseCharacter)
+		s.AddHandlerOnce(selectCharacter)
 	} else {
 
 		// Get the selecting player and duel ID
@@ -55,7 +55,7 @@ func chooseCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 				switch err = charRow.Scan(&selectedCharacter); err {
 				case sql.ErrNoRows:
 					s.ChannelMessageSend(m.ChannelID, "No character found, type -char Show if you forgot about your characters name")
-					s.AddHandlerOnce(chooseCharacter)
+					s.AddHandlerOnce(selectCharacter)
 					return
 				case nil:
 					// Select the opponents and their respective character informations
@@ -65,7 +65,7 @@ func chooseCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 					switch err = duelPlayerRow.Scan(&duelPlayers.Challenger, &duelPlayers.Challenged, &duelPlayers.ChallengerChar, &duelPlayers.ChallengedChar); err {
 					case sql.ErrNoRows:
 						s.ChannelMessageSend(m.ChannelID, "No character found, type -char Show if you forgot about your characters name")
-						s.AddHandlerOnce(chooseCharacter)
+						s.AddHandlerOnce(selectCharacter)
 						return
 					case nil:
 
@@ -80,7 +80,7 @@ func chooseCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 							if err != nil {
 								fmt.Println(err.Error())
 							}
-							chooseCharacterBase(s, m.ChannelID, []string{duelPlayers.Challenger, duelPlayers.Challenged}, 0)
+							selectCharacterBase(s, m.ChannelID, []string{duelPlayers.Challenger, duelPlayers.Challenged}, 0)
 						} else if currentDuel.SelectingPlayer == duelPlayers.Challenged {
 							_, err = database.DB.Exec(`UPDATE duelPlayers SET challengedChar=$1 WHERE preparationId=$2;`, selectedCharacter, currentDuel.Id)
 							if err != nil {
@@ -92,10 +92,10 @@ func chooseCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 								fmt.Println(err.Error())
 							}
 
-							chooseCharacterBase(s, m.ChannelID, []string{duelPlayers.Challenger, duelPlayers.Challenged}, 1)
+							selectCharacterBase(s, m.ChannelID, []string{duelPlayers.Challenger, duelPlayers.Challenged}, 1)
 						} else {
 							s.ChannelMessageSend(m.ChannelID, "Error loading character")
-							s.AddHandlerOnce(chooseCharacter)
+							s.AddHandlerOnce(selectCharacter)
 							return
 						}
 					}
@@ -108,7 +108,7 @@ func chooseCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 			} else {
 				// Repeat the handler if the user isn't the selecting player
 				s.ChannelMessageSend(m.ChannelID, "It is not your turn to choose a character")
-				s.AddHandlerOnce(chooseCharacter)
+				s.AddHandlerOnce(selectCharacter)
 			}
 		}
 	}

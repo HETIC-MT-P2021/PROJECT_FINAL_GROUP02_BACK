@@ -132,8 +132,8 @@ func duelInvitationHandler(s *discordgo.Session, r *discordgo.MessageReactionAdd
 		}
 
 		s.ChannelMessageSend(r.ChannelID, utils.SuccessMessage("Game on!", utils.FormatUser(user)+" accepted your duel invite ! Now select a character to send in the arena."))
-		//chooseCharacterBase(s, m.ChannelID, opponents, 0)
-		s.AddHandlerOnce(chooseCharacter)
+		//selectCharacterBase(s, m.ChannelID, opponents, 0)
+		s.AddHandlerOnce(selectCharacter)
 
 		// Send a message to tell the invitation was declined otherwise
 	} else if !general && r.Emoji.Name == "❌" && !utils.HasOtherReactionsBesides("❌", m.Reactions) {
