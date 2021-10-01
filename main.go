@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/SteakBarbare/RPGBot/database"
+	"github.com/SteakBarbare/RPGBot/socket"
 	"github.com/SteakBarbare/RPGBot/handlers"
 	"github.com/bwmarrin/discordgo"
 	"github.com/caarlos0/env/v6"
@@ -33,10 +34,13 @@ func main() {
 
 	fmt.Println(cfg)
 
+	// Start socket connection
+	go func() { socket.Connect() }()
+
+	// Database connection
 	database.Connect(cfg)
 
 	// Create a new Discord session using the provided bot token.
-
 	dg, err := discordgo.New(`Bot ` + token)
 	if err != nil {
 		fmt.Println("error creating Discord session,", err)
