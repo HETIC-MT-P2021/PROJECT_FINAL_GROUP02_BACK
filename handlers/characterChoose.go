@@ -3,10 +3,13 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
+	"log"
+	"strconv"
 
 	"github.com/SteakBarbare/RPGBot/database"
 	"github.com/SteakBarbare/RPGBot/duels"
 	"github.com/SteakBarbare/RPGBot/game"
+	"github.com/SteakBarbare/RPGBot/utils"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -19,7 +22,85 @@ func selectCharacterBase(s *discordgo.Session, channelID string, involvedPlayers
 		s.ChannelMessageSend(channelID, "All Players are ready, starting duel !")
 		duels.DuelController(s, channelID, involvedPlayers)
 	}
+}
 
+func selectDunjeonCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
+	
+	if m.Author.ID == s.State.User.ID {
+		return
+	}
+
+	if m.Content == "-quit" {
+		s.ChannelMessageSend(m.ChannelID, "Aborting character selection")
+	} else if m.Content == "-char Show" {
+		ShowCharacters(s, m)
+		s.AddHandlerOnce(selectDunjeonCharacter)
+	} else {
+		authorId, err := strconv.ParseInt(m.Author.ID, 10, 64)
+
+		if err != nil {
+			panic(err)
+		}
+
+		log.Println(authorId)
+
+		dungeon, err :=  utils.GetPlayerNotStartedDungeon(authorId)
+
+		if err != nil {
+			log.Println(err)
+			s.ChannelMessageSend(m.ChannelID, "No Active dungeon creation found, aborting")
+			return
+		}
+
+		// Get the character from db
+		charRow := database.DB.QueryRow("SELECT character_model_id FROM character_model WHERE player_id=$1 AND name=$2;", authorId, m.Content)
+
+		var selectedCharacter string
+		switch err = charRow.Scan(&selectedCharacter); err {
+		case sql.ErrNoRows:
+			s.ChannelMessageSend(m.ChannelID, "No character found, type -char Show if you forgot about your characters name")
+			s.AddHandlerOnce(selectCharacter)
+
+			return
+		case nil:
+
+			characterModel, err := utils.GetPlayerCharacterModel(authorId, m.Content)
+
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, "No character found, type -char Show if you forgot about your characters name")
+				s.AddHandlerOnce(selectDunjeonCharacter)
+
+				return
+			}
+
+			s.ChannelMessageSend(m.ChannelID, "Character found, generating dungeon map !")
+
+			characterInstance, err := utils.GetCharacterInstanceByModelId(characterModel.Id)
+
+			dungeonTiles, playerPosX, playerPosY, err := utils.InitDungeonTiles(characterInstance.Id, dungeon)
+
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, "Couldn't create dungeon, please retry")
+				s.AddHandlerOnce(selectDunjeonCharacter)
+
+				return
+			}
+
+			err = utils.UpdateDungeonCharacter(characterInstance.Id, dungeon.Id)
+
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, "Couldn't create dungeon, please retry")
+				s.AddHandlerOnce(selectDunjeonCharacter)
+
+				return
+			}
+
+			displayDungeonString := utils.DungeonTilesToString(dungeonTiles, playerPosX, playerPosY)
+
+			s.ChannelMessageSend(m.ChannelID, "SuccessFully generated dungeon map ! \n\n" + displayDungeonString)
+			//TODO: add helper play game
+	}
+}
 }
 
 func selectCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -32,13 +113,18 @@ func selectCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 	} else if m.Content == "-char Show" {
 		s.AddHandlerOnce(selectCharacter)
 	} else {
+		authorId, err := strconv.ParseInt(m.Author.ID, 10, 64)
+
+		if err != nil {
+			panic(err)
+		}
 
 		// Get the selecting player and duel ID
 		duelPreparation := database.DB.QueryRow(fmt.Sprintln("SELECT * FROM duelPreparation WHERE isReady=", 0))
 
 		currentDuel := game.DuelPreparation{}
 
-		err := duelPreparation.Scan(&currentDuel.Id, &currentDuel.SelectingPlayer, &currentDuel.IsReady, &currentDuel.IsOver, &currentDuel.Turn)
+		err = duelPreparation.Scan(&currentDuel.Id, &currentDuel.SelectingPlayer, &currentDuel.IsReady, &currentDuel.IsOver, &currentDuel.Turn)
 
 		if err != nil {
 			fmt.Println(err.Error())
@@ -49,7 +135,7 @@ func selectCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 			if m.Author.ID == currentDuel.SelectingPlayer {
 
 				// Get the character from db
-				charRow := database.DB.QueryRow("SELECT id FROM characters WHERE player=$1 AND charName=$2;", m.Author.ID, m.Content)
+				charRow := database.DB.QueryRow("SELECT id FROM characters WHERE player_id=$1 AND name=$2;", authorId, m.Content)
 
 				var selectedCharacter string
 				switch err = charRow.Scan(&selectedCharacter); err {

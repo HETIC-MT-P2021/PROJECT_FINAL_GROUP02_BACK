@@ -2,8 +2,11 @@ package handlers
 
 import (
 	"fmt"
+	"log"
+	"strconv"
 	"strings"
 
+	"github.com/SteakBarbare/RPGBot/utils"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -38,6 +41,35 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.AddHandlerOnce(inviteCommandHandler)
 		break
 
+	// Donjon BASED COMMANDS
+	// select a character, creates a dungeon, saves it, sends the map
+	case "-dungeon create":
+		authorId, err := strconv.ParseInt(m.Author.ID, 10, 64)
+
+		if err != nil {
+			panic(err)
+		}
+		log.Println(authorId)
+
+		_, err = utils.GetPlayerNotStartedDungeon(authorId)
+
+		if err == nil {
+			s.ChannelMessageSend(m.ChannelID, "You already have an dungeon in preparation !\n Select à character to continue")
+			s.AddHandlerOnce(selectDunjeonCharacter)
+
+			break;
+		}
+
+		utils.SaveInitDungeon(authorId)
+
+		s.ChannelMessageSend(m.ChannelID, "Prepare yourself!\n Select your character to send in the dungeon :")
+		
+		ShowCharacters(s, m)
+		
+		s.AddHandlerOnce(selectDunjeonCharacter)
+
+		break
+
 	// Hahahahaha hehehehehe
 	case "-Lambert":
 		s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=1FswhQmILLU")
@@ -49,6 +81,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintln("```-char New: Create a new character, a name will be asked and stats are generated randomly betweend 21 & 40",
 			"\n-char Show: Show all your characters and their stats",
 			"\n-duel Invite: Invite someone to a duel with you",
+			"\n-dungeon create: creates a dungeon, select a character and start the adventure",
 			"\nThe database will often be wiped out, so expect your characters to often disappear",
 			"\n-Lambert: hahahahaha hehehehehe```"))
 		break

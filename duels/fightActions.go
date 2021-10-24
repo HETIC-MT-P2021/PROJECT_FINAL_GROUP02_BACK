@@ -1,10 +1,10 @@
 package duels
 
 import (
-// 	"fmt"
+	// 	"fmt"
 
-// 	"github.com/SteakBarbare/RPGBot/utils"
- 	"github.com/bwmarrin/discordgo"
+	// 	"github.com/SteakBarbare/RPGBot/utils"
+	"github.com/bwmarrin/discordgo"
 )
 
 func FightAttack(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -17,11 +17,11 @@ func FightAttack(s *discordgo.Session, m *discordgo.MessageCreate) {
 // 		fmt.Println(err.Error())
 // 	}
 
-// 	challengerChar, err := utils.GetBattleCharacterById(currentDuelPlayers.ChallengerChar)
+// 	challengerChar, err := utils.GetCharacterInstanceById(currentDuelPlayers.ChallengerChar)
 // 	if err != nil {
 // 		fmt.Println(err.Error())
 // 	}
-// 	challengedChar, err := utils.GetBattleCharacterById(currentDuelPlayers.ChallengedChar)
+// 	challengedChar, err := utils.GetCharacterInstanceById(currentDuelPlayers.ChallengedChar)
 // 	if err != nil {
 // 		fmt.Println(err.Error())
 // 	}
