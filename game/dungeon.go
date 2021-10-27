@@ -1,12 +1,16 @@
 package game
 
-import "time"
+import (
+	"time"
+
+	"github.com/SteakBarbare/RPGBot/database"
+)
 
 type Dungeon struct {
 	Id                                                      int
 	CreatedAt												time.Time
 	CreatedBy												string
-	SelectedCharacterId                          			int
+	SelectedCharacterId                          			database.NullInt32
 	HasStarted, HasEnded                                    bool
 }
 

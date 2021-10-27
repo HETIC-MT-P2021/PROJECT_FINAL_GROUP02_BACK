@@ -2,10 +2,13 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"math/rand"
+	"strconv"
 
 	"github.com/SteakBarbare/RPGBot/game"
+	"github.com/bwmarrin/discordgo"
 )
 
 func findRandomNonBlockerPosInPattern(tilePattern [][]int, exitPosX, exitPosY int)(int, int){
@@ -26,7 +29,7 @@ func findRandomNonBlockerPosInPattern(tilePattern [][]int, exitPosX, exitPosY in
 func InitDungeonTiles(characterInstanceId int, dungeon *game.Dungeon) ([]game.DungeonTile, int, int, error){
 	basePattern := [][]int{{0,0,0,1,0}, {0,1,0,1,0}, {0,0,0,0,0}, {0,0,1,0,0}, {0,0,1,0,0}}
 
-	exitPostX, exitPosY := findRandomNonBlockerPosInPattern(basePattern, 5, 5)
+	exitPostX, exitPosY := findRandomNonBlockerPosInPattern(basePattern, -1, -1)
 	playerPosX, playerPosY := findRandomNonBlockerPosInPattern(basePattern, exitPostX, exitPosY)
 
 	var dungeonTiles []game.DungeonTile
@@ -68,14 +71,46 @@ func InitDungeonTiles(characterInstanceId int, dungeon *game.Dungeon) ([]game.Du
 	}
 
 	return dungeonTiles, playerPosX, playerPosY, nil
+}
 
-	// paterne de creation [[0,0,0,1,0], [0,1,0,1,0], [0,0,0,0,0], [0,0,1,0,0], [0,0,1,0,0]]
-	// rdm 0-> 4 2 fois pour avoir exit x/y, while [x][y] = 1, refaire
-	// rdm 0-> 4 2 fois pour avoir playerPos x/y, while [x][y] = 1, refaire
-	// pour chaque row
-	// pour chaque case
-	// if 0 => tile with impassable =false else true
-	// if exit set exit
-	// if playerPos add init playerModelInstance add id
-	// return array of tiles and playerPos
+func showCharacterName (hasCharacter bool, characterName string) (string){
+	if !hasCharacter {
+		return "None"
+	} else {
+		return characterName
+	}
+}
+
+func DisplayDungeonList (s *discordgo.Session, m *discordgo.MessageCreate, dungeons []game.Dungeon) (error) {
+	s.ChannelMessageSend(m.ChannelID, "Here's the list of your dungeons :")
+	var err error
+
+	for _, dungeon := range dungeons {
+		var characterName string
+		
+		hasDungeonCharacter := dungeon.SelectedCharacterId.Valid
+
+		if hasDungeonCharacter {
+			characterName, _ = FindNameWithCharacterInstance(int(dungeon.SelectedCharacterId.Int32))
+		}
+
+		// Show the new character stats & name
+		_, err = s.ChannelMessageSendEmbed(m.ChannelID, &discordgo.MessageEmbed{
+			Title: fmt.Sprintln("Here's one of your dungeon"),
+			Description: fmt.Sprintln(
+				"**ID:** ", strconv.Itoa(dungeon.Id),
+				"\n**Selected Character:** ", showCharacterName(hasDungeonCharacter, characterName),
+				"\n**Created At:** ", strconv.Itoa(int(dungeon.CreatedAt.Month())) + "/" + strconv.Itoa(dungeon.CreatedAt.Day()),
+				"\n**Has dungeon started:** ", strconv.FormatBool(dungeon.HasStarted),
+				"\n**Has dungeon Ended:** ", strconv.FormatBool(dungeon.HasEnded),
+			),
+			Color: 0x00ff99,
+			Footer: &discordgo.MessageEmbedFooter{
+				Text: "Player: " + m.Author.ID,
+			},
+		})
+
+	}
+
+	return err
 }

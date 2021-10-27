@@ -92,3 +92,23 @@ func CreateCharacterInstance(characterModel game.CharacterModel)(int, error){
 
 	return characterInstanceId, nil
 }
+
+func FindNameWithCharacterInstance(characterInstanceId int) (string, error) {
+	query := `SELECT name FROM character_model 
+	 WHERE character_model_id = 
+		(SELECT character_model_id FROM character_instance
+		WHERE character_instance_id=$1);`  
+
+	charRow := database.DB.QueryRow(query, characterInstanceId)
+
+	var characterName string
+
+	err := charRow.Scan(&characterName);
+
+	if err != nil {
+		log.Println(err)
+		return characterName, errors.New("Character name counldn't be found")
+	}
+
+	return characterName, nil
+}

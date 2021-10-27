@@ -12,8 +12,7 @@ import (
 func GetPlayerNotStartedDungeon(player_id int64) (*game.Dungeon, error) {
 	query := `SELECT dungeon_id, created_at, created_by, has_started FROM dungeon 
 		WHERE created_by=$1 
-		AND selected_character_id IS NULL
-		AND has_started = false`;
+		AND selected_character_id IS NULL`;
 
 	// Get the character from db
 	dungeonRow := database.DB.QueryRow(query, player_id)
@@ -79,9 +78,9 @@ func createDungeonTile(tile game.DungeonTile) (int, error) {
 	return tileId, nil
 }
 
-func UpdateDungeonCharacter(characterInstanceId, dungeonId int) error{
+func UpdateDungeonCharacter(characterInstanceId, characterModelId, dungeonId int) error{
 	query := `UPDATE dungeon 
-	SET selected_character_id = $1, has_started=true
+	SET selected_character_id = $1
 	WHERE dungeon_id=$2`
 
 	_, err := database.DB.Exec(query, characterInstanceId, dungeonId)
@@ -91,6 +90,43 @@ func UpdateDungeonCharacter(characterInstanceId, dungeonId int) error{
 		return errors.New("Dungeon could not be updated")
 	}
 
+	updateCharQuery := `UPDATE character_model 
+	SET is_occupied = true
+	WHERE character_model_id=$1`
+
+	_, err = database.DB.Exec(updateCharQuery, characterModelId)
+
+	if err != nil {
+		log.Println(err)
+		return errors.New("Dungeon could not be updated")
+	}
+
 	return nil
+}
+
+func GetPlayerDungeons(playerId int64) ([]game.Dungeon, error){
+	var playerDungeons []game.Dungeon
+
+	query := `SELECT dungeon_id, created_at, created_by, has_started, has_ended, selected_character_id FROM dungeon 
+		WHERE created_by=$1`;
+		
+	rows, err := database.DB.Query(query, playerId)
+
+	if err != nil {
+		return playerDungeons, err
+	}
 	
+	for rows.Next() {
+		var dungeon game.Dungeon
+
+		if err = rows.Scan(&dungeon.Id, &dungeon.CreatedAt, &dungeon.CreatedBy,
+			&dungeon.HasStarted, &dungeon.HasEnded, &dungeon.SelectedCharacterId); err != nil {
+			return playerDungeons, err
+		}
+		
+
+		playerDungeons = append(playerDungeons, dungeon)
+	}
+
+	return playerDungeons, nil
 }

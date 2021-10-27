@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
@@ -49,7 +48,6 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if err != nil {
 			panic(err)
 		}
-		log.Println(authorId)
 
 		_, err = utils.GetPlayerNotStartedDungeon(authorId)
 
@@ -70,17 +68,40 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		break
 
+	// select and displays authors dungeons
+	case "-dungeon list":
+		authorId, err := strconv.ParseInt(m.Author.ID, 10, 64)
+
+		if err != nil {
+			panic(err)
+		}
+
+		playerDungeons, err := utils.GetPlayerDungeons(authorId)
+
+		if err != nil {
+			s.ChannelMessageSend(m.ChannelID, "You have no current dungeon, you can create one with -dungeon create")
+		}
+
+		err = utils.DisplayDungeonList(s, m, playerDungeons)
+
+		if err != nil {
+			s.ChannelMessageSend(m.ChannelID, utils.ErrorMessage("Bot error", "Error showing dungeons."))
+		}
+
+		break
+
 	// Hahahahaha hehehehehe
 	case "-Lambert":
 		s.ChannelMessageSend(m.ChannelID, "https://www.youtube.com/watch?v=1FswhQmILLU")
 		break
 
 	// Halp, plz, I dunno what do to with this bot :c
-	case "-crrpg Help":
+	case "-crpg Help":
 		s.ChannelMessageSend(m.ChannelID, "These are the different commands you can use:")
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintln("```-char New: Create a new character, a name will be asked and stats are generated randomly betweend 21 & 40",
 			"\n-char Show: Show all your characters and their stats",
 			"\n-duel Invite: Invite someone to a duel with you",
+			"\n-dungeon list to list all your dungeons",
 			"\n-dungeon create: creates a dungeon, select a character and start the adventure",
 			"\nThe database will often be wiped out, so expect your characters to often disappear",
 			"\n-Lambert: hahahahaha hehehehehe```"))
