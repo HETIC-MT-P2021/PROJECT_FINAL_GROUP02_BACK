@@ -1,14 +1,11 @@
 package duels
 
 import (
-	"fmt"
-
-	"github.com/SteakBarbare/RPGBot/utils"
 	"github.com/bwmarrin/discordgo"
 )
 
 func FightOptionsInfo(s *discordgo.Session, channedId string) {
-	currentDuel, err := utils.GetActiveDuel()
+	/*currentDuel, err := utils.GetActiveDuel()
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -32,7 +29,7 @@ func FightOptionsInfo(s *discordgo.Session, channedId string) {
 		s.ChannelMessageSend(channedId, utils.ErrorMessage("Bot error", "Error Showing Fight Options."))
 	}
 
-	s.AddHandlerOnce(FightTurnOptions)
+	s.AddHandlerOnce(FightTurnOptions)*/
 }
 
 func FightTurnOptions(s *discordgo.Session, m *discordgo.MessageCreate) {
