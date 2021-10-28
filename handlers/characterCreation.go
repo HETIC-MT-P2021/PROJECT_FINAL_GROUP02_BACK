@@ -33,7 +33,7 @@ func NewCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 
 		// Get the character from db
-		checkChar := database.DB.QueryRow("SELECT name FROM character_model WHERE player_id=$1 AND name=$2;", authorId, m.Content)
+		checkChar := database.DB.QueryRow("SELECT name FROM character WHERE player_id=$1 AND name=$2;", authorId, m.Content)
 		
 		var foundCharName string
 
@@ -47,6 +47,12 @@ func NewCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 
 		character := statsGeneration(m.Content, authorId)
+
+		_, err = utils.CreateCharacter(*character)
+
+		if err != nil {
+			panic(err)
+		}
 
 		// Show the new character stats & name
 		_, err = s.ChannelMessageSendEmbed(m.ChannelID, &discordgo.MessageEmbed{
@@ -67,40 +73,15 @@ func NewCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSend(m.ChannelID, utils.ErrorMessage("Bot error", "Error showing characters."))
 			return
 		}
-
-		createCharQuery := `INSERT INTO character_model
-		 (name, player_id, precision, strength, endurance, agility, hitpoints)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7)
-		 RETURNING character_model_id;`
-
-		var characterModelId int
-
-		err = database.DB.QueryRow(createCharQuery,
-			m.Content, authorId, character.Precision, character.Strength, character.Endurance, character.Agility, character.Hitpoints).Scan(&characterModelId)
-
-		if err != nil {
-			panic(err)
-		}
-
-		createCharInstanceQuery := `INSERT INTO character_instance
-		(character_model_id, precision, strength, endurance, agility, hitpoints) 
-		VALUES ($1, $2, $3, $4, $5, $6)`
-
-		_, err = database.DB.Exec(createCharInstanceQuery,
-		characterModelId, character.Precision, character.Strength, character.Endurance, character.Agility, character.Hitpoints)
-
-		if err != nil {
-			panic(err)
-		}
-
+		
 	} else {
 		s.ChannelMessageSend(m.ChannelID, "Aborting character creation")
 	}
 }
 
 // Generate the different stats (random)
-func statsGeneration(givenName string, author int64) *game.CharacterModel {
-	character := game.CharacterModel{
+func statsGeneration(givenName string, author int64) *game.Character {
+	character := game.Character{
 		Name:          givenName,
 		PlayerId:       author,
 		Precision:     (rand.Intn(20) + 20),

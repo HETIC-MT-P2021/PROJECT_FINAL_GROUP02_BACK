@@ -26,7 +26,7 @@ func findRandomNonBlockerPosInPattern(tilePattern [][]int, exitPosX, exitPosY in
 	return posx, posy
 }
 
-func InitDungeonTiles(characterInstanceId int, dungeon *game.Dungeon) ([]game.DungeonTile, int, int, error){
+func InitDungeonTiles(characterId int, dungeon *game.Dungeon) ([]game.DungeonTile, int, int, error){
 	basePattern := [][]int{{0,0,0,1,0}, {0,1,0,1,0}, {0,0,0,0,0}, {0,0,1,0,0}, {0,0,1,0,0}}
 
 	exitPostX, exitPosY := findRandomNonBlockerPosInPattern(basePattern, -1, -1)
@@ -63,7 +63,7 @@ func InitDungeonTiles(characterInstanceId int, dungeon *game.Dungeon) ([]game.Du
 			}
 
 			if playerPosX == x && playerPosY == y {
-				linkCharacterInstanceToTile(tileId, characterInstanceId)
+				linkCharacterToTile(tileId, characterId)
 			}
 
 			dungeonTiles = append(dungeonTiles, tile)
@@ -91,7 +91,7 @@ func DisplayDungeonList (s *discordgo.Session, m *discordgo.MessageCreate, dunge
 		hasDungeonCharacter := dungeon.SelectedCharacterId.Valid
 
 		if hasDungeonCharacter {
-			characterName, _ = FindNameWithCharacterInstance(int(dungeon.SelectedCharacterId.Int32))
+			characterName, _ = FindCharNameWithId(int(dungeon.SelectedCharacterId.Int32))
 		}
 
 		// Show the new character stats & name

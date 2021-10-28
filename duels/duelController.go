@@ -1,9 +1,7 @@
 package duels
 
 import (
-	"errors"
 	"fmt"
-	"math/rand"
 
 	"github.com/SteakBarbare/RPGBot/database"
 	"github.com/SteakBarbare/RPGBot/game"
@@ -55,7 +53,7 @@ func duelSetup(challenger string, challenged string) *game.DuelBattle {
 
 // Do an initiative test (based on character Agility) to determine which character will play first
 func rollInitiative(duelSetup *game.DuelBattle, s *discordgo.Session, channelID string) (string, error) {
-	currentDuel, err := utils.GetActiveDuel()
+	/*currentDuel, err := utils.GetActiveDuel()
 	if err != nil {
 		return "0", errors.New("Duel not found")
 	}
@@ -64,11 +62,11 @@ func rollInitiative(duelSetup *game.DuelBattle, s *discordgo.Session, channelID 
 		return "0", errors.New("Duel data not found")
 	}
 
-	challengerChar, err := utils.GetCharacterInstanceById(currentDuelPlayers.ChallengerChar)
+	challengerChar, err := utils.GetCharacterById(currentDuelPlayers.ChallengerChar)
 	if err != nil {
 		return "0", errors.New("Challenger character not found")
 	}
-	challengedChar, err := utils.GetCharacterInstanceById(currentDuelPlayers.ChallengedChar)
+	challengedChar, err := utils.GetCharacterById(currentDuelPlayers.ChallengedChar)
 	if err != nil {
 		return "0", errors.New("Challenged character not found")
 	}
@@ -93,5 +91,6 @@ func rollInitiative(duelSetup *game.DuelBattle, s *discordgo.Session, channelID 
 			s.ChannelMessageSend(channelID, fmt.Sprintln(currentDuelPlayers.ChallengedChar, " will play first"))
 			return duelSetup.Challengers[1], nil
 		}
-	}
+	}*/
+	return "Not implemented", nil
 }

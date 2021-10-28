@@ -18,8 +18,8 @@ func ShowCharacters(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Get the characters info from db
-	selectCharQuery := `SELECT character_model_id, name, player_id, precision, strength, endurance, agility, hitpoints, is_alive, is_occupied
-	 FROM character_model
+	selectCharQuery := `SELECT character_id, name, player_id, precision, strength, endurance, agility, hitpoints, is_alive, is_occupied
+	 FROM character
 	 WHERE player_id=`
 
 	charRows, err := database.DB.Query(fmt.Sprintln(selectCharQuery, m.Author.ID))
@@ -35,7 +35,7 @@ func ShowCharacters(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		// Check if there is at least one character
 
-		createdCharacter := game.CharacterModel{}
+		createdCharacter := game.Character{}
 
 		if err := charRows.Scan(&createdCharacter.Id, &createdCharacter.Name, &createdCharacter.PlayerId, &createdCharacter.Precision, &createdCharacter.Strength, &createdCharacter.Endurance, &createdCharacter.Agility, &createdCharacter.Hitpoints, &createdCharacter.IsAlive, &createdCharacter.IsOccupied); err != nil {
 
@@ -52,8 +52,8 @@ func ShowCharacters(s *discordgo.Session, m *discordgo.MessageCreate) {
 				"\n**Endurance:** ", strconv.Itoa(createdCharacter.Endurance),
 				"\n**Agility:** ", strconv.Itoa(createdCharacter.Agility),
 				"\n**Hitpoints:** ", strconv.Itoa(createdCharacter.Hitpoints),
-				"\n**Still Alive:** ", strconv.FormatBool(createdCharacter.IsAlive),
-				"\n**Available:** ", strconv.FormatBool(createdCharacter.IsOccupied)),
+				"\n**Still alive:** ", strconv.FormatBool(createdCharacter.IsAlive),
+				"\n**Is in a quest:** ", strconv.FormatBool(createdCharacter.IsOccupied)),
 			Color: 0x0099ff,
 			Footer: &discordgo.MessageEmbedFooter{
 				Text: "Player: " + m.Author.ID,

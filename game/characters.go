@@ -8,19 +8,13 @@ Agility				Increase dodge chances and help resisting some effects
 Hitpoints			Character hitpoints, if it reaches 0, the character may suffer minor to lethal injuries
 */
 
-type CharacterModel struct {
-	Id                                                                                         int
+type Character struct {
+	Id                                                                                          int
 	Name 																						string
-	PlayerId                                                                               	   int64   
-	Precision, Strength, Endurance, Agility, Hitpoints 										   int
-	IsAlive, IsOccupied                                                                        bool
+	PlayerId                                                                               	    int64   
+	Precision, Strength, Endurance, Agility, Hitpoints 										    int
+	PrecisionMax, StrengthMax, EnduranceMax, AgilityMax, HitpointsMax							int
+	IsAlive, IsOccupied            bool
+	ChosenActionId                                         int                    
 }
 
-// Victories, Defeats, Temporary stat values & boolean to check if the character is fighting
-
-type CharacterInstance struct {
-	Id                                                                                         int
-	ModelId                                                                                    int
-	Precision, Strength, Endurance, Agility, Hitpoints 										   int
-	ChosenActionId                                                           				   int
-}

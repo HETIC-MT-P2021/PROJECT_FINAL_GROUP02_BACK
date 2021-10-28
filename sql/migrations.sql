@@ -36,22 +36,11 @@ CREATE TABLE IF NOT EXISTS dungeon_tile(
 
 CREATE TABLE IF NOT EXISTS link_character_tile(
     tile_id                 SERIAL,
-    character_instance_id   INT NOT NULL
+    character_id      INT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS character_instance(
-    character_instance_id       SERIAL,
-    character_model_id          INT NOT NULL,
-    precision                   INT NOT NULL,
-    strength                    INT NOT NULL,
-    endurance                   INT NOT NULL,
-    agility                     INT NOT NULL,
-    hitpoints                   INT NOT NULL,
-    chosen_action_id            INT
-);
-
-CREATE TABLE IF NOT EXISTS character_model(
-    character_model_id      SERIAL,
+CREATE TABLE IF NOT EXISTS character(
+    character_id            SERIAL,
     name                    VARCHAR(255) NOT NULL,
     player_id               BIGINT NOT NULL,
     precision               INT NOT NULL,
@@ -59,8 +48,14 @@ CREATE TABLE IF NOT EXISTS character_model(
     endurance               INT NOT NULL,
     agility                 INT NOT NULL,
     hitpoints               INT NOT NULL,
+    precision_max           INT NOT NULL,
+    strength_max            INT NOT NULL,
+    endurance_max           INT NOT NULL,
+    agility_max             INT NOT NULL,
+    hitpoints_max           INT NOT NULL,
     is_occupied             BOOLEAN DEFAULT false,
-    is_alive                BOOLEAN DEFAULT true
+    is_alive                BOOLEAN DEFAULT true,
+    chosen_action_id        INT DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS link_entity_tile(

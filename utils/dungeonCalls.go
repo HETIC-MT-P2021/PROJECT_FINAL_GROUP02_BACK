@@ -46,12 +46,12 @@ func SaveInitDungeon(playerId int64) (error) {
 	return nil
 }
 
-func linkCharacterInstanceToTile(tileId, characterInstanceId int) error {
+func linkCharacterToTile(tileId, characterId int) error {
 	query := `INSERT INTO link_character_tile
-	 	(tile_id, character_instance_id)
+	 	(tile_id, character_id)
 	 	VALUES ($1, $2)`
 
-	_, err := database.DB.Exec(query, tileId, characterInstanceId)
+	_, err := database.DB.Exec(query, tileId, characterId)
 
 	if err != nil {
 		log.Println(err)
@@ -78,23 +78,23 @@ func createDungeonTile(tile game.DungeonTile) (int, error) {
 	return tileId, nil
 }
 
-func UpdateDungeonCharacter(characterInstanceId, characterModelId, dungeonId int) error{
+func UpdateDungeonCharacter(characterId, dungeonId int) error {
 	query := `UPDATE dungeon 
-	SET selected_character_id = $1
-	WHERE dungeon_id=$2`
+	 SET selected_character_id = $1
+	 WHERE dungeon_id=$2`
 
-	_, err := database.DB.Exec(query, characterInstanceId, dungeonId)
+	_, err := database.DB.Exec(query, characterId, dungeonId)
 
 	if err != nil {
 		log.Println(err)
 		return errors.New("Dungeon could not be updated")
 	}
 
-	updateCharQuery := `UPDATE character_model 
-	SET is_occupied = true
-	WHERE character_model_id=$1`
+	updateCharQuery := `UPDATE character
+	 SET is_occupied = true
+	 WHERE character_id=$1`
 
-	_, err = database.DB.Exec(updateCharQuery, characterModelId)
+	_, err = database.DB.Exec(updateCharQuery, characterId)
 
 	if err != nil {
 		log.Println(err)

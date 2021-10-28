@@ -31,9 +31,8 @@ func selectDunjeonCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if m.Content == "-quit" {
-		s.ChannelMessageSend(m.ChannelID, "Aborting character selection")
+		s.ChannelMessageSend(m.ChannelID, "Aborting dungeon character selection")
 	} else if m.Content == "-char Show" {
-		ShowCharacters(s, m)
 		s.AddHandlerOnce(selectDunjeonCharacter)
 	} else {
 		authorId, err := strconv.ParseInt(m.Author.ID, 10, 64)
@@ -50,54 +49,69 @@ func selectDunjeonCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 			return
 		}
 
+		var selectedCharacterId string
+
+		selecteCharQuery := `SELECT character_id 
+		 FROM character 
+		 WHERE name=$1 
+		 AND player_id=$2 
+		 AND is_occupied=false 
+		 AND is_alive=true`
+
 		// Get the character from db
-		charRow := database.DB.QueryRow("SELECT character_model_id FROM character_model WHERE player_id=$1 AND name=$2 AND is_occupied=false;", authorId, m.Content)
+		charRow := database.DB.QueryRow(selecteCharQuery, m.Content, authorId)
 
-		var selectedCharacter string
+		err = charRow.Scan(&selectedCharacterId)
 
-		switch err = charRow.Scan(&selectedCharacter); err {
-			case sql.ErrNoRows:
-				s.ChannelMessageSend(m.ChannelID, "No character found or is Busy\n type -char Show if you forgot about your characters name")
-				s.AddHandlerOnce(selectDunjeonCharacter)
-
-				return
-			case nil:
-
-				characterModel, err := utils.GetPlayerCharacterModel(authorId, m.Content)
-
-				if err != nil {
-					s.ChannelMessageSend(m.ChannelID, "No character found or is Busy\n type -char Show if you forgot about your characters name")
+		if err != nil {
+			switch err {
+				case sql.ErrNoRows:
+					s.ChannelMessageSend(m.ChannelID, "Error, character not found or is Busy\n type -char Show if you forgot about your characters name")
 					s.AddHandlerOnce(selectDunjeonCharacter)
 
 					return
-				}
-
-				s.ChannelMessageSend(m.ChannelID, "Character found, generating dungeon map !")
-
-				characterInstance, err := utils.GetCharacterInstanceByModelId(characterModel.Id)
-
-				dungeonTiles, playerPosX, playerPosY, err := utils.InitDungeonTiles(characterInstance.Id, dungeon)
-
-				if err != nil {
-					s.ChannelMessageSend(m.ChannelID, "Couldn't create dungeon, please retry")
+				default:
+					utils.ErrorMessage("Bot error", "an error occured:" + err.Error())
 					s.AddHandlerOnce(selectDunjeonCharacter)
 
 					return
-				}
-
-				err = utils.UpdateDungeonCharacter(characterInstance.Id, characterModel.Id, dungeon.Id)
-
-				if err != nil {
-					s.ChannelMessageSend(m.ChannelID, "Couldn't create dungeon, please retry")
-					s.AddHandlerOnce(selectDunjeonCharacter)
-
-					return
-				}
-
-				displayDungeonString := utils.DungeonTilesToString(dungeonTiles, playerPosX, playerPosY)
-
-				s.ChannelMessageSend(m.ChannelID, "SuccessFully generated dungeon map ! \n\n" + displayDungeonString + "\n\nID of the Dungeon :" + strconv.FormatInt(int64(dungeon.Id), 10))
+			}
 		}
+
+		character, err := utils.GetPlayerCharacterByName(authorId, m.Content)
+
+		if err != nil {
+			s.ChannelMessageSend(m.ChannelID, "No character found or is Busy\n type -char Show if you forgot about your characters name")
+			s.AddHandlerOnce(selectDunjeonCharacter)
+
+			return
+		}
+
+		s.ChannelMessageSend(m.ChannelID, "Character found, generating dungeon map !")
+
+		dungeonTiles, playerPosX, playerPosY, err := utils.InitDungeonTiles(character.Id, dungeon)
+
+		if err != nil {
+			s.ChannelMessageSend(m.ChannelID, "Couldn't create dungeon, please retry")
+			s.AddHandlerOnce(selectDunjeonCharacter)
+
+			return
+		}
+
+		err = utils.UpdateDungeonCharacter(character.Id, dungeon.Id)
+
+		if err != nil {
+			s.ChannelMessageSend(m.ChannelID, "Couldn't create dungeon, please retry")
+			s.AddHandlerOnce(selectDunjeonCharacter)
+
+			return
+		}
+
+		displayDungeonString := utils.DungeonTilesToString(dungeonTiles, playerPosX, playerPosY)
+
+		s.ChannelMessageSend(m.ChannelID, "SuccessFully generated dungeon map ! \n\n" + displayDungeonString + "\n\nID of the Dungeon :" + strconv.FormatInt(int64(dungeon.Id), 10))
+
+		
 	}
 }
 
