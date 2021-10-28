@@ -26,7 +26,7 @@ func findRandomNonBlockerPosInPattern(tilePattern [][]int, exitPosX, exitPosY in
 	return posx, posy
 }
 
-func InitDungeonTiles(characterId int, dungeon *game.Dungeon) ([]game.DungeonTile, int, int, error){
+func InitDungeonTiles(characterId int, dungeon *game.Dungeon) ([]game.DungeonTile, error){
 	basePattern := [][]int{{0,0,0,1,0}, {0,1,0,1,0}, {0,0,0,0,0}, {0,0,1,0,0}, {0,0,1,0,0}}
 
 	exitPostX, exitPosY := findRandomNonBlockerPosInPattern(basePattern, -1, -1)
@@ -59,18 +59,24 @@ func InitDungeonTiles(characterId int, dungeon *game.Dungeon) ([]game.DungeonTil
 
 			if tileCreationErr != nil {
 				log.Println(tileCreationErr)
-				return dungeonTiles, playerPosX, playerPosY, errors.New("Dungeon tiles couln't be created")
+				return dungeonTiles, errors.New("Dungeon tiles couln't be created")
 			}
 
 			if playerPosX == x && playerPosY == y {
+				var char game.Character
+
 				linkCharacterToTile(tileId, characterId)
+
+				updateTileIsDiscovered(tileId)
+
+				tile.Characters = append(tile.Characters, char)
 			}
 
 			dungeonTiles = append(dungeonTiles, tile)
 		}
 	}
 
-	return dungeonTiles, playerPosX, playerPosY, nil
+	return dungeonTiles, nil
 }
 
 func showCharacterName (hasCharacter bool, characterName string) (string){
@@ -103,6 +109,7 @@ func DisplayDungeonList (s *discordgo.Session, m *discordgo.MessageCreate, dunge
 				"\n**Created At:** ", strconv.Itoa(int(dungeon.CreatedAt.Month())) + "/" + strconv.Itoa(dungeon.CreatedAt.Day()),
 				"\n**Has dungeon started:** ", strconv.FormatBool(dungeon.HasStarted),
 				"\n**Has dungeon Ended:** ", strconv.FormatBool(dungeon.HasEnded),
+				"\n**Is dungeon paused:** ", strconv.FormatBool(dungeon.IsPaused),
 			),
 			Color: 0x00ff99,
 			Footer: &discordgo.MessageEmbedFooter{

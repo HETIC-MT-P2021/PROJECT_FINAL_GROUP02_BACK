@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS dungeon(
     created_by              BIGINT NOT NULL,
 	selected_character_id   INT DEFAULT null,
     has_started             BOOLEAN DEFAULT false,
-	has_ended               BOOLEAN DEFAULT false
+	has_ended               BOOLEAN DEFAULT false,
+    is_paused               BOOLEAN DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS dungeon_tile(
@@ -35,8 +36,8 @@ CREATE TABLE IF NOT EXISTS dungeon_tile(
 );
 
 CREATE TABLE IF NOT EXISTS link_character_tile(
-    tile_id                 SERIAL,
-    character_id      INT NOT NULL
+    tile_id                 INT NOT NULL,
+    character_id            INT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS character(
@@ -59,8 +60,8 @@ CREATE TABLE IF NOT EXISTS character(
 );
 
 CREATE TABLE IF NOT EXISTS link_entity_tile(
-    tile_id                 SERIAL,
-    entity_instance_id   INT NOT NULL
+    tile_id                 INT NOT NULL,
+    entity_instance_id      INT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS entity_instance(
@@ -86,8 +87,8 @@ CREATE TABLE IF NOT EXISTS entity_model(
 );
 
 CREATE TABLE IF NOT EXISTS link_event_tile(
-    tile_id                 SERIAL,
-    entity_instance_id      INT NOT NULL
+    tile_id                 INT NOT NULL,
+    event_id                INT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS event_model(

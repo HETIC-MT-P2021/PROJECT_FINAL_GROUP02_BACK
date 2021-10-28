@@ -2,9 +2,9 @@ package utils
 
 import "github.com/SteakBarbare/RPGBot/game"
 
-var DiplayMessage = []string{"[ ]", "[#]", "[P]", "[E]"}
+var DiplayMessage = []string{"[?]", "[#]", "[P]", "[E]", "[  ]"}
 
-func DungeonTilesToString(dungeonTiles []game.DungeonTile, playerPosX, playerPosY int) string {
+func DungeonTilesToString(dungeonTiles []game.DungeonTile) string {
 	var dungeonDisplay string
 	var dungeonMap [5][5]int
 
@@ -13,16 +13,18 @@ func DungeonTilesToString(dungeonTiles []game.DungeonTile, playerPosX, playerPos
 
 		displayInt := 0
 
+		if dungeonTile.IsDiscovered {
+			displayInt = 4
+		}
 		if dungeonTile.IsExit {
 			displayInt = 3
-		}
-		if dungeonTile.X == playerPosX && playerPosY == dungeonTile.Y {
-			displayInt = 2
 		}
 		if dungeonTile.IsImpassable {
 			displayInt = 1
 		}
-
+		if len(dungeonTile.Characters) > 0 {
+			displayInt = 2
+		}
 
 		dungeonMap[dungeonTile.X][dungeonTile.Y] = displayInt
 	}
