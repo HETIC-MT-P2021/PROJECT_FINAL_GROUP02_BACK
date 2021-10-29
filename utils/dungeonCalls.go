@@ -458,3 +458,87 @@ func UpdatePlayerTile(character game.Character, dungeonTiles []game.DungeonTile,
 
 	return dungeonTiles, err
 }
+
+func LinkCharacterDungeon(dungeonId, character_id int) error {
+	query := `INSERT INTO link_character_dungeon
+	 	(dungeon_id, character_id)
+	 	VALUES ($1, $2)`
+
+	_, err := database.DB.Exec(query, dungeonId, character_id)
+
+	if err != nil {
+		log.Println(err)
+		return errors.New("LinkDungeonCharacter could not be created")
+	}
+
+	return nil
+}
+
+func GetPlayerDungeonLinkedCharacter(dungeonId int, playerId int64) (int, error) {
+	var characterId int
+
+	query := `SELECT l.character_id
+	 FROM link_character_dungeon l
+	 INNER JOIN character c ON l.character_id=c.character_id
+   	 WHERE l.dungeon_id=$1
+	 AND c.player_id=$2`;
+		
+	row := database.DB.QueryRow(query, dungeonId, playerId)
+	
+	err := row.Scan(&characterId)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return characterId, errors.New("Linked Character not found")
+	} else {
+		return characterId, nil
+	}
+}
+
+func GetCharacterTile(characterId, dungeonId int) (game.DungeonTile, error) {
+	query := `SELECT l.tile_id, t.x, t.y, t.is_discovered, t.is_exit, t.is_impassable
+	 FROM link_character_tile l 
+	 INNER JOIN dungeon_tile t ON t.tile_id = l.tile_id
+	 WHERE t.dungeon_id =$1 
+	 AND l.character_id=$2`;
+
+	// Get the character from db
+	tileRow := database.DB.QueryRow(query, dungeonId, characterId)
+
+	characterTile := game.DungeonTile{}
+	
+	err := tileRow.Scan(&characterTile.Id, &characterTile.X, &characterTile.Y, &characterTile.IsDiscovered, &characterTile.IsExit, &characterTile.IsImpassable)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return characterTile, errors.New("Dungeon not found")
+	} else {
+		return characterTile, nil
+	}
+}
+
+func EndDungeon(dungeonId, characterId int) error {
+	query := `UPDATE dungeon 
+	 SET is_paused = true, has_ended = true
+	 WHERE dungeon_id=$1`
+
+	_, err := database.DB.Exec(query, dungeonId)
+
+	if err != nil {
+		log.Println(err)
+		return errors.New("Dungeon could not be updated")
+	}
+
+	characterQuery := `UPDATE character 
+	 SET is_occupied = false
+	 WHERE character_id=$1`
+
+	_, err = database.DB.Exec(characterQuery, characterId)
+
+	if err != nil {
+		log.Println(err)
+		return errors.New("Character could not be updated")
+	}
+
+	return nil
+}
