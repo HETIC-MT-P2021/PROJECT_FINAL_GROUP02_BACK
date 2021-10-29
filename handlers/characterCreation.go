@@ -49,7 +49,7 @@ func NewCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 		character := statsGeneration(m.Content, authorId)
 
 		_, err = utils.CreateCharacter(*character)
-
+		
 		if err != nil {
 			panic(err)
 		}

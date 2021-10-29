@@ -9,9 +9,9 @@ import (
 type Dungeon struct {
 	Id                                                      int
 	CreatedAt												time.Time
-	CreatedBy												string
+	CreatedBy												int64
 	SelectedCharacterId                          			database.NullInt32
-	HasStarted, HasEnded                                    bool
+	HasStarted, HasEnded, IsPaused                          bool
 }
 
 type DungeonTile struct {

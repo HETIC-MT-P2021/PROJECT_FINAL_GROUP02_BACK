@@ -3,13 +3,11 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/SteakBarbare/RPGBot/database"
 	"github.com/SteakBarbare/RPGBot/duels"
 	"github.com/SteakBarbare/RPGBot/game"
-	"github.com/SteakBarbare/RPGBot/utils"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -21,97 +19,6 @@ func selectCharacterBase(s *discordgo.Session, channelID string, involvedPlayers
 	} else {
 		s.ChannelMessageSend(channelID, "All Players are ready, starting duel !")
 		duels.DuelController(s, channelID, involvedPlayers)
-	}
-}
-
-func selectDunjeonCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
-	
-	if m.Author.ID == s.State.User.ID {
-		return
-	}
-
-	if m.Content == "-quit" {
-		s.ChannelMessageSend(m.ChannelID, "Aborting dungeon character selection")
-	} else if m.Content == "-char Show" {
-		s.AddHandlerOnce(selectDunjeonCharacter)
-	} else {
-		authorId, err := strconv.ParseInt(m.Author.ID, 10, 64)
-
-		if err != nil {
-			panic(err)
-		}
-
-		dungeon, err :=  utils.GetPlayerNotStartedDungeon(authorId)
-
-		if err != nil {
-			log.Println(err)
-			s.ChannelMessageSend(m.ChannelID, "No Active dungeon creation found, aborting")
-			return
-		}
-
-		var selectedCharacterId string
-
-		selecteCharQuery := `SELECT character_id 
-		 FROM character 
-		 WHERE name=$1 
-		 AND player_id=$2 
-		 AND is_occupied=false 
-		 AND is_alive=true`
-
-		// Get the character from db
-		charRow := database.DB.QueryRow(selecteCharQuery, m.Content, authorId)
-
-		err = charRow.Scan(&selectedCharacterId)
-
-		if err != nil {
-			switch err {
-				case sql.ErrNoRows:
-					s.ChannelMessageSend(m.ChannelID, "Error, character not found or is Busy\n type -char Show if you forgot about your characters name")
-					s.AddHandlerOnce(selectDunjeonCharacter)
-
-					return
-				default:
-					utils.ErrorMessage("Bot error", "an error occured:" + err.Error())
-					s.AddHandlerOnce(selectDunjeonCharacter)
-
-					return
-			}
-		}
-
-		character, err := utils.GetPlayerCharacterByName(authorId, m.Content)
-
-		if err != nil {
-			s.ChannelMessageSend(m.ChannelID, "No character found or is Busy\n type -char Show if you forgot about your characters name")
-			s.AddHandlerOnce(selectDunjeonCharacter)
-
-			return
-		}
-
-		s.ChannelMessageSend(m.ChannelID, "Character found, generating dungeon map !")
-
-		dungeonTiles, playerPosX, playerPosY, err := utils.InitDungeonTiles(character.Id, dungeon)
-
-		if err != nil {
-			s.ChannelMessageSend(m.ChannelID, "Couldn't create dungeon, please retry")
-			s.AddHandlerOnce(selectDunjeonCharacter)
-
-			return
-		}
-
-		err = utils.UpdateDungeonCharacter(character.Id, dungeon.Id)
-
-		if err != nil {
-			s.ChannelMessageSend(m.ChannelID, "Couldn't create dungeon, please retry")
-			s.AddHandlerOnce(selectDunjeonCharacter)
-
-			return
-		}
-
-		displayDungeonString := utils.DungeonTilesToString(dungeonTiles, playerPosX, playerPosY)
-
-		s.ChannelMessageSend(m.ChannelID, "SuccessFully generated dungeon map ! \n\n" + displayDungeonString + "\n\nID of the Dungeon :" + strconv.FormatInt(int64(dungeon.Id), 10))
-
-		
 	}
 }
 
