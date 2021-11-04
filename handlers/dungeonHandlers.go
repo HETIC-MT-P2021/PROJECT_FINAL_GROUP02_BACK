@@ -298,7 +298,7 @@ func dungeonTileMove(s *discordgo.Session, m *discordgo.MessageCreate){
 
 		direction := messageSplit[2]
 
-		newMapString, err := utils.HandleTileMove(direction, authorId)
+		newDungeonTiles, wasTileAlreadyDiscovered, err := utils.HandleTileMove(direction, authorId)
 
 		if err != nil {
 			s.ChannelMessageSend(m.ChannelID, "Couldn't move there ! \n:"+ err.Error())
@@ -308,7 +308,26 @@ func dungeonTileMove(s *discordgo.Session, m *discordgo.MessageCreate){
 			return
 		}
 
-		s.ChannelMessageSend(m.ChannelID, "You arrive in a new room! \n\n" + newMapString + "\n\n What's your next move ?")
+		// TODO: add display only events where WasActivated = false || IsAlwaysActive = true
+		// Apply event effect on player
+		// Update event's WasActivated
+		// Display in the map only event where IsAlwaysActive = true
+
+		newMapString := utils.DungeonTilesToString(newDungeonTiles)
+
+		if !wasTileAlreadyDiscovered {
+			s.ChannelMessageSend(m.ChannelID, "You arrive in a new room! \n\n" + newMapString)
+		} else {
+			s.ChannelMessageSend(m.ChannelID, "You have already been there, \n\n" + newMapString)
+		}
+		
+		err = utils.HandleNewTileEvents(newDungeonTiles, s, m, authorId)
+
+		if err != nil {
+			s.ChannelMessageSend(m.ChannelID, utils.ErrorMessage("Bot error", "an error occured:" + err.Error()))
+		}
+
+		s.ChannelMessageSend(m.ChannelID, "\n\n What's your next move ?")
 
 		s.AddHandlerOnce(dungeonTileMove)
 

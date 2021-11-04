@@ -1,41 +1,79 @@
 package utils
 
-import "github.com/SteakBarbare/RPGBot/game"
+import (
+	"strconv"
 
-var DiplayMessage = []string{"[?]", "[#]", "[P]", "[E]", "[  ]"}
+	"github.com/SteakBarbare/RPGBot/game"
+)
+
+func handleTileToDisplayString(tile game.DungeonTile) string {
+	var tileDisplayString string
+
+	playerD := "P"
+	wallD:= "####"
+	unknownD := "?????"
+	exitD := "EXT"
+	eventD := "EV"
+	monsterD := "M"
+	spaceD := "  "
+	halfSpaceD := " "
+	emptyD := "            "
+
+	
+	if tile.IsImpassable {
+		return wallD
+	}
+
+	if !tile.IsDiscovered{
+		return unknownD
+	}
+
+	if tile.IsExit {
+		tileDisplayString += exitD
+	}
+
+	if len(tile.Entities) > 0 {
+		tileDisplayString += strconv.Itoa(len(tile.Entities)) + monsterD
+	}
+
+	if len(tile.Events) > 0 {
+		tileDisplayString += strconv.Itoa(len(tile.Events)) + eventD
+	}
+
+	if len(tile.Characters) > 0 {
+		tileDisplayString += strconv.Itoa(len(tile.Characters)) + playerD
+	}
+
+	if len(tileDisplayString) == 0 {
+		return emptyD
+	}
+
+	if len(tileDisplayString) < 4 {
+		return spaceD + tileDisplayString + spaceD
+	}
+
+	if len(tileDisplayString) == 4 {
+		return halfSpaceD + tileDisplayString + halfSpaceD
+	}
+
+	return tileDisplayString
+}
 
 func DungeonTilesToString(dungeonTiles []game.DungeonTile) string {
 	var dungeonDisplay string
-	var dungeonMap [5][5]int
+	var dungeonMap [5][5]string
 
 	for i := 0; i < len(dungeonTiles); i++ {
 		dungeonTile := dungeonTiles[i]
+		
+		displayStyle := handleTileToDisplayString(dungeonTile)
 
-		displayInt := 0
-
-		if dungeonTile.IsDiscovered {
-			displayInt = 4
-		}
-		if dungeonTile.IsExit {
-			displayInt = 3
-		}
-		if dungeonTile.IsImpassable {
-			displayInt = 1
-		}
-		if len(dungeonTile.Characters) > 0 {
-			displayInt = 2
-		}
-
-		dungeonMap[dungeonTile.Y][dungeonTile.X] = displayInt
+		dungeonMap[dungeonTile.Y][dungeonTile.X] = displayStyle
 	}
 
 	for y := 0; y < 5; y++ {
 		for x := 0; x < 5; x++ {
-			displayInt := dungeonMap[y][x]
-
-			displayString := DiplayMessage[displayInt]
-
-			dungeonDisplay = dungeonDisplay + displayString
+			dungeonDisplay = dungeonDisplay + "[" + dungeonMap[y][x] + "]"
 		}
 
 		dungeonDisplay += "\n"
