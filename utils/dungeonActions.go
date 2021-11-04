@@ -32,20 +32,20 @@ func tranlasteDirectionToNewPos(direction string, posX, posY int) (int, int, err
 
 	switch direction {
 	case "top", "up":
-		newPosX = posX - 1
-		newPosY = posY 
+		newPosX = posX
+		newPosY = posY - 1 
 		break
 	case "right":
-		newPosX = posX 
-		newPosY = posY + 1
+		newPosX = posX + 1 
+		newPosY = posY
 		break
 	case "bot", "bottom":
-		newPosX = posX + 1
-		newPosY = posY 
+		newPosX = posX
+		newPosY = posY + 1
 		break
 	case "left":
-		newPosX = posX
-		newPosY = posY - 1
+		newPosX = posX - 1
+		newPosY = posY
 		break
 	default:
 		return newPosX, newPosY, errors.New("Direction wasn't correct")

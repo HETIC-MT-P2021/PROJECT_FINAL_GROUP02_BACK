@@ -26,12 +26,12 @@ func DungeonTilesToString(dungeonTiles []game.DungeonTile) string {
 			displayInt = 2
 		}
 
-		dungeonMap[dungeonTile.X][dungeonTile.Y] = displayInt
+		dungeonMap[dungeonTile.Y][dungeonTile.X] = displayInt
 	}
 
-	for x := 0; x < 5; x++ {
-		for y := 0; y < 5; y++ {
-			displayInt := dungeonMap[x][y]
+	for y := 0; y < 5; y++ {
+		for x := 0; x < 5; x++ {
+			displayInt := dungeonMap[y][x]
 
 			displayString := DiplayMessage[displayInt]
 

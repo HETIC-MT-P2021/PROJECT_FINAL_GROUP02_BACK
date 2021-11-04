@@ -25,6 +25,11 @@ CREATE TABLE IF NOT EXISTS dungeon(
     is_paused               BOOLEAN DEFAULT false
 );
 
+CREATE TABLE IF NOT EXISTS link_character_dungeon(
+    dungeon_id              INT NOT NULL,
+    character_id            INT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS dungeon_tile(
     tile_id                 SERIAL,
     dungeon_id              INT NOT NULL,
