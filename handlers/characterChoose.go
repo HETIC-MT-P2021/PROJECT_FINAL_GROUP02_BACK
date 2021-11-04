@@ -54,12 +54,14 @@ func selectCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 			if m.Author.ID == currentDuel.SelectingPlayer {
 
 				// Get the character from db
-				charRow := database.DB.QueryRow("SELECT id FROM characters WHERE player_id=$1 AND name=$2;", authorId, m.Content)
-
-				var selectedCharacter string
+				charRow := database.DB.QueryRow("SELECT character_id FROM character WHERE player_id=$1 AND name=$2;", authorId, m.Content)
+				fmt.Println("SuuS")
+				var selectedCharacter int
+				
 				switch err = charRow.Scan(&selectedCharacter); err {
 				case sql.ErrNoRows:
-					s.ChannelMessageSend(m.ChannelID, "No character found, type -char Show if you forgot about your characters name")
+					fmt.Println(selectedCharacter)
+					s.ChannelMessageSend(m.ChannelID, "No character found, type -char show if you forgot about your characters name")
 					s.AddHandlerOnce(selectCharacter)
 					return
 				case nil:

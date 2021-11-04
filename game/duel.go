@@ -12,8 +12,8 @@ type DuelPlayer struct {
 	PreparationId  string
 	Challenger     string
 	Challenged     string
-	ChallengerChar string
-	ChallengedChar string
+	ChallengerChar int
+	ChallengedChar int
 }
 
 type DuelBattle struct {
