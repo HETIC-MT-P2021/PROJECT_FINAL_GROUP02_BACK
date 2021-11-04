@@ -81,6 +81,7 @@ func selectDunjeonCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 		dungeonTiles, err := utils.InitDungeonTiles(character.Id, dungeon)
 
 		if err != nil {
+			log.Println(err)
 			s.ChannelMessageSend(m.ChannelID, "Couldn't create dungeon, please retry")
 			s.AddHandlerOnce(selectDunjeonCharacter)
 
@@ -90,7 +91,18 @@ func selectDunjeonCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 		err = utils.UpdateDungeonCharacter(character.Id, dungeon.Id)
 
 		if err != nil {
+			log.Println(err)
 			s.ChannelMessageSend(m.ChannelID, "Couldn't create dungeon, please retry")
+			s.AddHandlerOnce(selectDunjeonCharacter)
+
+			return
+		}
+
+		err = utils.LinkCharacterDungeon(dungeon.Id, character.Id)
+
+		if err != nil {
+			log.Println(err)
+			s.ChannelMessageSend(m.ChannelID, "Couldn't create dungeon please retry")
 			s.AddHandlerOnce(selectDunjeonCharacter)
 
 			return
@@ -99,6 +111,8 @@ func selectDunjeonCharacter(s *discordgo.Session, m *discordgo.MessageCreate) {
 		displayDungeonString := utils.DungeonTilesToString(dungeonTiles)
 
 		s.ChannelMessageSend(m.ChannelID, "SuccessFully generated dungeon map ! \n\n" + displayDungeonString + "\n\nID of the Dungeon :" + strconv.FormatInt(int64(dungeon.Id), 10))		
+
+		return
 	}
 }
 
@@ -189,11 +203,16 @@ func selectDunjeonToPlay(s *discordgo.Session, m *discordgo.MessageCreate) {
 		 -dungeon move [left, right, top, bot]
 
 		You can also pause the exploration with:
-		 -dungeon pause or -quit`
+		 -dungeon pause or -quit
+		 
+		On the exit tile, you will be able to leave with:
+		 -dungeon exit`
 
 		s.ChannelMessageSend(m.ChannelID, "Successfully found the dungeon, here's the current map of it ! \n\n"+ dungeonString + instructionString)
 
 		s.AddHandlerOnce(dungeonTileMove)
+
+		return
 	}
 }
 
@@ -229,6 +248,45 @@ func dungeonTileMove(s *discordgo.Session, m *discordgo.MessageCreate){
 		s.ChannelMessageSend(m.ChannelID, "Pausing dungeon, you can restart again with -dungeon start")
 
 		return
+	} else if m.Content == "-dungeon exit"{
+		dungeon, err := utils.GetPlayerCurrentStartedDungeon(authorId)
+
+		if err != nil {
+			log.Println(err)
+			s.ChannelMessageSend(m.ChannelID, utils.ErrorMessage("Bot Error", "Couldn't find current dungeon"))
+
+			return
+		}
+
+		characterId, err := utils.GetPlayerDungeonLinkedCharacter(dungeon.Id, authorId)
+
+		if err != nil {
+			log.Println(err)
+			s.ChannelMessageSend(m.ChannelID, utils.ErrorMessage("Bot Error", "Couldn't find your character"))
+
+			return
+		}
+
+		characterTile, err := utils.GetCharacterTile(characterId, dungeon.Id)
+
+		if err != nil {
+			log.Println(err)
+			s.ChannelMessageSend(m.ChannelID, utils.ErrorMessage("Bot Error", "Couldn't find your character's tile"))
+
+			return
+		}
+
+		if characterTile.IsExit == true {
+			utils.EndDungeon(dungeon.Id, characterId)
+			s.ChannelMessageSend(m.ChannelID, "You successfully left the dungeon, this character is now available")
+
+			return
+		} else {
+			s.ChannelMessageSend(m.ChannelID, "You are not on a exit Tile")
+			s.AddHandlerOnce(dungeonTileMove)
+
+			return
+		}
 	} else {
 		messageSplit := strings.Split(m.Content, " ")
 
@@ -253,5 +311,7 @@ func dungeonTileMove(s *discordgo.Session, m *discordgo.MessageCreate){
 		s.ChannelMessageSend(m.ChannelID, "You arrive in a new room! \n\n" + newMapString + "\n\n What's your next move ?")
 
 		s.AddHandlerOnce(dungeonTileMove)
+
+		return
 	}
 }
