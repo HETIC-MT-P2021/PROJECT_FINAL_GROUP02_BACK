@@ -34,8 +34,8 @@ func InitDungeonTiles(characterId int, dungeon *game.Dungeon) ([]game.DungeonTil
 
 	var dungeonTiles []game.DungeonTile
 
-	for x := 0; x < 5; x++ {
-		for y := 0; y < 5; y++ {
+	for y := 0; y < 5; y++ {
+		for x := 0; x < 5; x++ {
 			var tile game.DungeonTile
 
 			tile.DungeonId = dungeon.Id
@@ -43,7 +43,7 @@ func InitDungeonTiles(characterId int, dungeon *game.Dungeon) ([]game.DungeonTil
 			tile.X = x
 			tile.Y = y
 
-			if basePattern[x][y] == 1 {
+			if basePattern[y][x] == 1 {
 				tile.IsImpassable = true
 			} else {
 				tile.IsImpassable = false
