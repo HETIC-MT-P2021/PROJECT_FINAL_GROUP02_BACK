@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/SteakBarbare/RPGBot/consts"
 	"github.com/SteakBarbare/RPGBot/utils"
 	"github.com/bwmarrin/discordgo"
 )
@@ -18,6 +19,13 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	// Ignore message not in playground channel
+	channel, _ := s.Channel(m.ChannelID)
+
+	if channel.Name != consts.PlaygroundChannelName {
+		return
+	}
+	
 	switch m.Content {
 
 	// CHARACTER BASED COMMANDS
@@ -145,6 +153,13 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 func ReactionsHandler(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
 	// Ignore all reactions created by the bot itself
 	if r.UserID == s.State.User.ID {
+		return
+	}
+
+	// Ignore message not in playground channel
+	channel, _ := s.Channel(r.ChannelID)
+
+	if channel.Name != consts.PlaygroundChannelName {
 		return
 	}
 
