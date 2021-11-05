@@ -12,7 +12,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/caarlos0/env/v6"
 	"github.com/joho/godotenv"
-	"github.com/SteakBarbare/RPGBot/websocket"
+	"github.com/SteakBarbare/RPGBot/socketio"
 )
 
 func main() {
@@ -36,8 +36,8 @@ func main() {
 
 	database.Connect(cfg)
 
-	// Start websocket connection
-	go func() { websocket.Connect() }()
+	// Start socketio connection
+	go func() { socketio.Connect() }()
 
 	// Create a new Discord session using the provided bot token.
 
