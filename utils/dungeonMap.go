@@ -15,12 +15,12 @@ func findRandomNonBlockerPosInPattern(tilePattern [][]int, exitPosX, exitPosY in
 	var posx int;
 	var posy int;
 
-	posx = rand.Intn(5) - 1
-	posy = rand.Intn(5) - 1
+	posx = rand.Intn(5)
+	posy = rand.Intn(5)
 
 	for tilePattern[posy][posx] != 0 && posx != exitPosX && posy != exitPosY {
-		posx = rand.Intn(5) - 1
-		posy = rand.Intn(5) - 1
+		posx = rand.Intn(5)
+		posy = rand.Intn(5)
 	}
 
 	return posx, posy
@@ -121,4 +121,42 @@ func DisplayDungeonList (s *discordgo.Session, m *discordgo.MessageCreate, dunge
 	}
 
 	return err
+}
+
+func GetCloseTiles(centerTile game.DungeonTile, dungeonTiles[]game.DungeonTile)([]game.DungeonTile){
+	var closeByTiles []game.DungeonTile
+
+	for _, tile := range dungeonTiles {
+		if tile.Id == centerTile.Id ||
+		 (tile.X == centerTile.X && tile.Y == centerTile.Y + 1) ||
+		 (tile.X == centerTile.X && tile.Y == centerTile.Y - 1)||
+		 (tile.X == centerTile.X + 1 && tile.Y == centerTile.Y)||
+		 (tile.X == centerTile.X - 1 && tile.Y == centerTile.Y) {
+			closeByTiles = append(closeByTiles, tile)
+		} 
+	}
+
+	return closeByTiles
+}
+
+func InsertEventAndLinkToTiles(event game.Event, tiles []game.DungeonTile)error {
+	var buffEffectId int
+
+	buffEffectId, err := InsertEvent(event)
+
+	if err !=nil {
+		return err
+	}
+
+	for _, tile := range tiles {
+		if !tile.IsExit || !tile.IsImpassable {
+			err = LinkEventTile(buffEffectId, tile.Id)
+
+			if err !=nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

@@ -103,3 +103,81 @@ func FindCharNameWithId(characterId int) (string, error) {
 
 	return characterName, nil
 }
+
+func UpdateCharIsDead(charId int) error {
+	query := `UPDATE character 
+	 SET is_alive = false
+	 WHERE character_id=$1`
+
+	_, err := database.DB.Exec(query, charId)
+
+	if err != nil {
+		log.Println(err)
+		return errors.New("Character could not be set dead")
+	}
+
+	return nil
+}
+
+func UpdateCharHitpoints(character game.Character) error {
+	query := `UPDATE character 
+	 SET hitpoints = $1
+	 WHERE character_id=$2`
+
+	_, err := database.DB.Exec(query, character.Hitpoints, character.Id)
+
+	if err != nil {
+		log.Println(err)
+		return errors.New("Character health couldn't be updated")
+	}
+
+	return nil
+}
+
+func UpdateCharPrecision(character game.Character) error {
+	query := `UPDATE character 
+	 SET precision = $1
+	 WHERE character_id=$2`
+
+	_, err := database.DB.Exec(query, character.Precision, character.Id)
+
+	if err != nil {
+		log.Println(err)
+		return errors.New("Character precision couldn't be updated")
+	}
+
+	return nil
+}
+
+func UpdateCharStrength(character game.Character) error {
+	query := `UPDATE character 
+	 SET strength = $1
+	 WHERE character_id=$2`
+
+	_, err := database.DB.Exec(query, character.Strength, character.Id)
+
+	if err != nil {
+		log.Println(err)
+		return errors.New("Character strength couldn't be updated")
+	}
+
+	return nil
+}
+
+func UpdateCharacterFightinhStats(character game.Character) error {
+	query := `UPDATE character 
+	 SET strength = $1,
+	  agility = $2,
+	  endurance = $3,
+	  precision = $4
+	 WHERE character_id=$5`
+
+	_, err := database.DB.Exec(query, character.Strength, character.Agility, character.Endurance, character.Precision, character.Id)
+
+	if err != nil {
+		log.Println(err)
+		return errors.New("Character fighting stats couldn't be updated")
+	}
+
+	return nil
+}

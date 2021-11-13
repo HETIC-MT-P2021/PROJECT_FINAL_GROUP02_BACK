@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/SteakBarbare/RPGBot/consts"
 	"github.com/SteakBarbare/RPGBot/database"
 	"github.com/SteakBarbare/RPGBot/game"
 )
@@ -250,8 +251,15 @@ func GetTileEntities(tileId int) ([]game.EntityInstance, error) {
 			&entity.Strength, &entity.Endurance, &entity.Agility, &entity.Hitpoints, &entity.ChosenActionId); err != nil {
 			return entities, err
 		}
-		
 
+		for _, entityModel := range consts.EntityModels {
+			if entityModel.Id == entity.ModelId {
+				entity.Name = entityModel.Name
+
+				break
+			}
+		}
+		
 		entities = append(entities, entity)
 	}
 
@@ -298,7 +306,7 @@ func GetTileEvents(tileId int) ([]game.Event, error) {
 	var events []game.Event
 
 	query := `SELECT 
-	 l.event_id, e.name, e.description, e.event_type, e.is_always_active, e.was_activated
+	 l.event_id, e.category_id, e.event_model_id, e.name, e.description, e.is_always_active, e.was_activated
 	 FROM link_event_tile l 
 	 INNER JOIN event e ON l.event_id = e.event_id
    	 WHERE tile_id=$1`;
@@ -312,7 +320,7 @@ func GetTileEvents(tileId int) ([]game.Event, error) {
 	for rows.Next() {
 		var event game.Event
 
-		if err = rows.Scan(&event.Id, &event.Name, &event.Description, &event.EventType, &event.IsAlwaysActive, &event.WasActivated); err != nil {
+		if err = rows.Scan(&event.Id,  &event.CategoryId, &event.EventModelId, &event.Name, &event.Description, &event.IsAlwaysActive, &event.WasActivated); err != nil {
 			return events, err
 		}
 		

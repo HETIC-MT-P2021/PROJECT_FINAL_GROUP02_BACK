@@ -81,17 +81,6 @@ CREATE TABLE IF NOT EXISTS entity_instance(
     is_alive                BOOLEAN NOT NULL DEFAULT true
 );
 
-CREATE TABLE IF NOT EXISTS entity_model(
-    entity_model_id         SERIAL,
-    name                    VARCHAR(255) NOT NULL,
-    precision               INT NOT NULL,
-    strength                INT NOT NULL,
-    endurance               INT NOT NULL,
-    agility                 INT NOT NULL,
-    hitpoints               INT NOT NULL,
-    is_alive                BOOLEAN DEFAULT false
-);
-
 CREATE TABLE IF NOT EXISTS link_event_tile(
     tile_id                 INT NOT NULL,
     event_id                INT NOT NULL
@@ -99,7 +88,8 @@ CREATE TABLE IF NOT EXISTS link_event_tile(
 
 CREATE TABLE IF NOT EXISTS event (
     event_id            SERIAL,
-    event_type          INT NOT NULL,
+    event_model_id      INT NOT NULL,
+    category_id            INT NOT NULL,
     name                VARCHAR(255) NOT NULL,
     description         TEXT NOT NULL,
     is_always_active    BOOLEAN NOT NULL DEFAULT false,

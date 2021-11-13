@@ -82,7 +82,7 @@ func checkTileIsGood(dungeonTiles []game.DungeonTile, newPosX, newPosY int) (gam
 	return newTile, nil
 }
 
-func HandleTileMove(direction string, playerId int64) ([]game.DungeonTile, bool, error) {
+func HandleTileMove(direction string, playerId int64) ([]game.DungeonTile, bool, int, error) {
 	var dungeonTiles []game.DungeonTile
 	
 	wasAlreadyDiscovered := false
@@ -90,25 +90,25 @@ func HandleTileMove(direction string, playerId int64) ([]game.DungeonTile, bool,
 	dungeon, err := GetPlayerCurrentStartedDungeon(playerId)
 
 	if err != nil {
-		return dungeonTiles, wasAlreadyDiscovered, err
+		return dungeonTiles, wasAlreadyDiscovered, dungeon.Id, err
 	}
 
 	dungeonTiles, err = GetFullDungeonTiles(dungeon.Id)
 
 	if err != nil {
-		return dungeonTiles, wasAlreadyDiscovered, err
+		return dungeonTiles, wasAlreadyDiscovered, dungeon.Id, err
 	}
 
 	oldTile, character, isFound := findPlayerPosInDungeon(playerId, dungeonTiles)
 
 	if !isFound {
-		return dungeonTiles, wasAlreadyDiscovered, errors.New("Player not found in the dungeon")
+		return dungeonTiles, wasAlreadyDiscovered, dungeon.Id, errors.New("Player not found in the dungeon")
 	}
 
 	newPosX, newPosY, err := tranlasteDirectionToNewPos(direction, oldTile.X, oldTile.Y)
 
 	if err != nil {
-		return dungeonTiles, wasAlreadyDiscovered, err
+		return dungeonTiles, wasAlreadyDiscovered, dungeon.Id, err
 	}
 
 	newPlayerTile, err := checkTileIsGood(dungeonTiles, newPosX, newPosY)
@@ -116,14 +116,14 @@ func HandleTileMove(direction string, playerId int64) ([]game.DungeonTile, bool,
 	wasAlreadyDiscovered = newPlayerTile.IsDiscovered
 	
 	if err != nil {
-		return dungeonTiles, wasAlreadyDiscovered, err
+		return dungeonTiles, wasAlreadyDiscovered, dungeon.Id, err
 	}
 
 	newDungeonTiles, err := UpdatePlayerTile(character, dungeonTiles, oldTile, newPlayerTile)
 
 	if err != nil {
-		return newDungeonTiles, wasAlreadyDiscovered, err
+		return newDungeonTiles, wasAlreadyDiscovered, dungeon.Id, err
 	}
 
-	return newDungeonTiles, wasAlreadyDiscovered, nil
+	return newDungeonTiles, wasAlreadyDiscovered, dungeon.Id, nil
 }	
