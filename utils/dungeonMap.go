@@ -101,7 +101,7 @@ func DisplayDungeonList (s *discordgo.Session, m *discordgo.MessageCreate, dunge
 			characterName, _ = FindCharNameWithId(int(dungeon.SelectedCharacterId.Int32))
 		}
 
-		// Show the new character stats & name
+		// Show the map
 		_, err = s.ChannelMessageSendEmbed(m.ChannelID, &discordgo.MessageEmbed{
 			Title: fmt.Sprintln("Here's one of your dungeon"),
 			Description: fmt.Sprintln(
