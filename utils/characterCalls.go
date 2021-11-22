@@ -3,6 +3,7 @@ package utils
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/SteakBarbare/RPGBot/database"
@@ -27,6 +28,8 @@ func GetCharacterById(id int) (*game.Character, error) {
 			return &selectedCharacter, errors.New("Character not found")
 		case nil:
 	}
+
+	fmt.Println(selectedCharacter)
 
 	return &selectedCharacter, nil
 }
