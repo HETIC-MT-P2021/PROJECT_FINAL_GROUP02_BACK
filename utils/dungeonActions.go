@@ -82,7 +82,13 @@ func checkTileIsGood(dungeonTiles []game.DungeonTile, newPosX, newPosY int) (gam
 	return newTile, nil
 }
 
-func HandleTileMove(direction string, playerId int64, dungeon game.Dungeon) (string, error) {
+func HandleTileMove(direction string, playerId int64) (string, error) {
+	dungeon, err := GetPlayerCurrentStartedDungeon(playerId)
+
+	if err != nil {
+		return "", err
+	}
+
 	dungeonTiles, err := GetFullDungeonTiles(dungeon.Id)
 
 	if err != nil {
