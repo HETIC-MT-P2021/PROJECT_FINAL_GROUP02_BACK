@@ -9,6 +9,7 @@ import (
 	"github.com/SteakBarbare/RPGBot/database"
 	"github.com/SteakBarbare/RPGBot/utils"
 	"github.com/bwmarrin/discordgo"
+	"github.com/SteakBarbare/RPGBot/socketio"
 )
 
 
@@ -298,7 +299,12 @@ func dungeonTileMove(s *discordgo.Session, m *discordgo.MessageCreate){
 
 		direction := messageSplit[2]
 
-		newMapString, err := utils.HandleTileMove(direction, authorId)
+		dungeon, err := utils.GetPlayerCurrentStartedDungeon(authorId)
+		if err != nil {
+			log.Println(err)
+		}
+
+		newMapString, err := utils.HandleTileMove(direction, authorId, dungeon)
 
 		if err != nil {
 			s.ChannelMessageSend(m.ChannelID, "Couldn't move there ! \n:"+ err.Error())
@@ -307,6 +313,8 @@ func dungeonTileMove(s *discordgo.Session, m *discordgo.MessageCreate){
 
 			return
 		}
+
+		socketio.UpdateDungeonTiles(dungeon.Id)
 
 		s.ChannelMessageSend(m.ChannelID, "You arrive in a new room! \n\n" + newMapString + "\n\n What's your next move ?")
 
