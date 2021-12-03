@@ -12,10 +12,10 @@ import (
 
 func GetCharacterById(id int) (*game.Character, error) {
 	query := `SELECT 
-	 character_id,
+	 character_id, name, player_id,
 	 precision, strength, endurance, agility, hitpoints,
 	 precision_max, strength_max, endurance_max, agility_max, hitpoints_max,
-	 is_occupied, is_alive 
+	 is_occupied, is_alive, chosen_action_id
 	 FROM character WHERE character_id=$1;`
 
 	// Get the character from db
@@ -23,7 +23,7 @@ func GetCharacterById(id int) (*game.Character, error) {
 
 	selectedCharacter := game.Character{}
 
-	switch err := charRow.Scan(&selectedCharacter.Id, &selectedCharacter.Name, &selectedCharacter.PlayerId, &selectedCharacter.Precision, &selectedCharacter.Strength, &selectedCharacter.Endurance, &selectedCharacter.Agility, &selectedCharacter.Hitpoints, &selectedCharacter.PrecisionMax, &selectedCharacter.StrengthMax, &selectedCharacter.EnduranceMax, &selectedCharacter.AgilityMax, &selectedCharacter.HitpointsMax, &selectedCharacter.IsAlive, &selectedCharacter.IsOccupied); err {
+	switch err := charRow.Scan(&selectedCharacter.Id, &selectedCharacter.Name, &selectedCharacter.PlayerId, &selectedCharacter.Precision, &selectedCharacter.Strength, &selectedCharacter.Endurance, &selectedCharacter.Agility, &selectedCharacter.Hitpoints, &selectedCharacter.PrecisionMax, &selectedCharacter.StrengthMax, &selectedCharacter.EnduranceMax, &selectedCharacter.AgilityMax, &selectedCharacter.HitpointsMax, &selectedCharacter.IsAlive, &selectedCharacter.IsOccupied, &selectedCharacter.ChosenActionId); err {
 		case sql.ErrNoRows:
 			return &selectedCharacter, errors.New("Character not found")
 		case nil:
