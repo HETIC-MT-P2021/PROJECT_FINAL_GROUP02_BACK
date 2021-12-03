@@ -4,6 +4,8 @@
 
 RPG bot for Discord made in go, with some rules I created a few years ago based on Warhammer Fantasy Roleplay V2
 
+A Front to display the maps [exist here](https://github.com/HETIC-MT-P2021/PROJECT_FINAL_GROUP02_FRONT)
+
 ## Features
 
 - Character creation with randomized stats
@@ -37,12 +39,18 @@ To run this project, you will also need to install the following dependencies on
 
 ### > How to launch the project
 
+- Create a .env with the content of .env.example
+
 - To run the project
   `docker-compose up --build`
 
-- On another terminal, after the docker is up
-  `docker-compose exec go /bin/sh`
-  `go run main.go`
+- The bot is available on the Discord server of the Token
+
+Send `-crpg Help` to test if it's working
+
+- You can set up the Front end of the project afterward
+
+[front](https://github.com/HETIC-MT-P2021/PROJECT_FINAL_GROUP02_FRONT)
 
 ## Contributing
 
