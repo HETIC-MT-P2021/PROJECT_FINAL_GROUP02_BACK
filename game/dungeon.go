@@ -21,7 +21,7 @@ type DungeonTile struct {
 	IsDiscovered, IsExit, IsImpassable                      bool
 	Entities                                                []EntityInstance
 	Characters                                              []Character
-	Events                                                  []EventModel
+	Events                                                  []Event
 }
 
 type DungeonInstance struct {

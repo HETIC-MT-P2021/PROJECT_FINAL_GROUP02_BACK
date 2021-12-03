@@ -82,44 +82,48 @@ func checkTileIsGood(dungeonTiles []game.DungeonTile, newPosX, newPosY int) (gam
 	return newTile, nil
 }
 
-func HandleTileMove(direction string, playerId int64) (string, error) {
+func HandleTileMove(direction string, playerId int64) ([]game.DungeonTile, bool, error) {
+	var dungeonTiles []game.DungeonTile
+	
+	wasAlreadyDiscovered := false
+
 	dungeon, err := GetPlayerCurrentStartedDungeon(playerId)
 
 	if err != nil {
-		return "", err
+		return dungeonTiles, wasAlreadyDiscovered, err
 	}
 
-	dungeonTiles, err := GetFullDungeonTiles(dungeon.Id)
+	dungeonTiles, err = GetFullDungeonTiles(dungeon.Id)
 
 	if err != nil {
-		return "", err
+		return dungeonTiles, wasAlreadyDiscovered, err
 	}
 
 	oldTile, character, isFound := findPlayerPosInDungeon(playerId, dungeonTiles)
 
 	if !isFound {
-		return "", errors.New("Player not found in the dungeon")
+		return dungeonTiles, wasAlreadyDiscovered, errors.New("Player not found in the dungeon")
 	}
 
 	newPosX, newPosY, err := tranlasteDirectionToNewPos(direction, oldTile.X, oldTile.Y)
 
 	if err != nil {
-		return "", err
+		return dungeonTiles, wasAlreadyDiscovered, err
 	}
 
 	newPlayerTile, err := checkTileIsGood(dungeonTiles, newPosX, newPosY)
 
+	wasAlreadyDiscovered = newPlayerTile.IsDiscovered
+	
 	if err != nil {
-		return "", err
+		return dungeonTiles, wasAlreadyDiscovered, err
 	}
 
 	newDungeonTiles, err := UpdatePlayerTile(character, dungeonTiles, oldTile, newPlayerTile)
 
 	if err != nil {
-		return "", err
+		return newDungeonTiles, wasAlreadyDiscovered, err
 	}
 
-	newMapString := DungeonTilesToString(newDungeonTiles)
-
-	return newMapString, nil
+	return newDungeonTiles, wasAlreadyDiscovered, nil
 }	

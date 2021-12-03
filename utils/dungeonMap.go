@@ -15,12 +15,12 @@ func findRandomNonBlockerPosInPattern(tilePattern [][]int, exitPosX, exitPosY in
 	var posx int;
 	var posy int;
 
-	posx = rand.Intn(4)
-	posy = rand.Intn(4)
+	posx = rand.Intn(5) - 1
+	posy = rand.Intn(5) - 1
 
-	for tilePattern[posx][posy] != 0 && posx != exitPosX && posy != exitPosY {
-		posx = rand.Intn(4)
-		posy = rand.Intn(4)
+	for tilePattern[posy][posx] != 0 && posx != exitPosX && posy != exitPosY {
+		posx = rand.Intn(5) - 1
+		posy = rand.Intn(5) - 1
 	}
 
 	return posx, posy
@@ -69,6 +69,7 @@ func InitDungeonTiles(characterId int, dungeon *game.Dungeon) ([]game.DungeonTil
 
 				updateTileIsDiscovered(tileId)
 
+				tile.IsDiscovered = true
 				tile.Characters = append(tile.Characters, char)
 			}
 

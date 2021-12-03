@@ -247,7 +247,7 @@ func GetTileEntities(tileId int) ([]game.EntityInstance, error) {
 		var entity game.EntityInstance
 
 		if err = rows.Scan(&entity.Id, &entity.ModelId, &entity.Precision,
-			&entity.Strength, &entity.Endurance, &entity.Agility, &entity.Hitpoints, entity.ChosenActionId); err != nil {
+			&entity.Strength, &entity.Endurance, &entity.Agility, &entity.Hitpoints, &entity.ChosenActionId); err != nil {
 			return entities, err
 		}
 		
@@ -294,13 +294,13 @@ func GetTileCharacter(tileId int) ([]game.Character, error) {
 	return characters, nil
 }
 
-func GetTileEvents(tileId int) ([]game.EventModel, error) {
-	var events []game.EventModel
+func GetTileEvents(tileId int) ([]game.Event, error) {
+	var events []game.Event
 
 	query := `SELECT 
-	 l.event_id, e.event_name
+	 l.event_id, e.name, e.description, e.event_type, e.is_always_active, e.was_activated
 	 FROM link_event_tile l 
-	 INNER JOIN event_model e ON l.event_id = e.event_id
+	 INNER JOIN event e ON l.event_id = e.event_id
    	 WHERE tile_id=$1`;
 		
 	rows, err := database.DB.Query(query, tileId)
@@ -310,9 +310,9 @@ func GetTileEvents(tileId int) ([]game.EventModel, error) {
 	}
 	
 	for rows.Next() {
-		var event game.EventModel
+		var event game.Event
 
-		if err = rows.Scan(&event.Id, &event.Name); err != nil {
+		if err = rows.Scan(&event.Id, &event.Name, &event.Description, &event.EventType, &event.IsAlwaysActive, &event.WasActivated); err != nil {
 			return events, err
 		}
 		
@@ -400,9 +400,16 @@ func updateTileIsDiscovered(tileId int) error {
 	return nil
 }
 
+
+
 func DiscoverTile(tile game.DungeonTile)(game.DungeonTile, error){
-	// TODO: generate event/entities
-	err := updateTileIsDiscovered(tile.Id)
+	var err error
+
+	if !tile.IsExit {
+		tile, err = HandleEventsOnDiscover(tile)
+	}
+
+	err = updateTileIsDiscovered(tile.Id)
 
 	if err != nil {
 		return tile, err
