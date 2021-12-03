@@ -198,6 +198,29 @@ func UpdateDungeonIsPaused(dungeonId int, isPaused bool) error {
 	return nil
 }
 
+func FetchDungeonTile(dungeonId, y, x int) (game.DungeonTile, error) {
+	query := `SELECT 
+	 tile_id, is_discovered, is_exit, is_impassable
+	 FROM dungeon_tile 
+   	 WHERE dungeon_id=$1
+	 AND X=$2
+	 AND Y=$3`;
+
+	var tile game.DungeonTile
+
+	err := database.DB.QueryRow(query, dungeonId, x, y).Scan(&tile.Id, &tile.IsDiscovered, &tile.IsExit, &tile.IsImpassable)
+
+	if err != nil {
+		log.Println(err)
+		return tile, errors.New("DungeonTile could not be fetched")
+	}
+
+	tile.DungeonId = dungeonId
+	tile.X = x
+	tile.Y = y
+
+	return tile, nil
+}
 
 func FetchDungeonTiles(dungeonId int) ([]game.DungeonTile, error) {
 	var dungeonTiles []game.DungeonTile
@@ -329,6 +352,38 @@ func GetTileEvents(tileId int) ([]game.Event, error) {
 	}
 
 	return events, nil
+}
+
+func GetFullTileInfo(dungeonId, y, x int) (game.DungeonTile, error){
+	tile, err := FetchDungeonTile(dungeonId, y, x)
+
+	if err != nil {
+		return tile, err
+	}
+
+	entities, err := GetTileEntities(tile.Id)
+
+	if err != nil {
+		return tile, err
+	}
+
+	characters, err := GetTileCharacter(tile.Id)
+
+	if err != nil {
+		return tile, err
+	}
+
+	events, err := GetTileEvents(tile.Id)
+
+	if err != nil {
+		return tile, err
+	}
+
+	tile.Entities = entities
+	tile.Characters = characters
+	tile.Events = events
+
+	return tile, nil
 }
 
 func GetFullDungeonTiles(dungeonId int)([]game.DungeonTile, error) {

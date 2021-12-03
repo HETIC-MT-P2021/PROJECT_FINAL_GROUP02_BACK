@@ -201,6 +201,8 @@ func selectDunjeonToPlay(s *discordgo.Session, m *discordgo.MessageCreate) {
 		You can now select where you want to go with:
 		 -dungeon move [left, right, top, bot]
 
+		Use -dungeon tileinfo [row] [column] (starts corner top left at 0 0) to know every thing about a tile
+		
 		You can also pause the exploration with:
 		 -dungeon pause or -quit
 		 
@@ -288,6 +290,57 @@ func dungeonTileMove(s *discordgo.Session, m *discordgo.MessageCreate){
 		}
 	} else {
 		messageSplit := strings.Split(m.Content, " ")
+
+		if messageSplit[0] == "-dungeon" && messageSplit[1] == "tileInfo" {
+			if len(messageSplit) != 4 {
+				s.ChannelMessageSend(m.ChannelID, "Use -dungeon tileinfo [row] [column] (starts corner top left at 0 0) to know every thing about a tile")
+				s.AddHandlerOnce(dungeonTileMove)
+				
+				return
+			}
+
+			Y, Xerr := strconv.Atoi(messageSplit[2])
+			X, Yerr := strconv.Atoi(messageSplit[3])
+
+			if Xerr != nil || Yerr != nil {
+				s.ChannelMessageSend(m.ChannelID, utils.ErrorMessage("Bot Error", "Couldn't change [row] [column] to coordonate"))
+				s.AddHandlerOnce(dungeonTileMove)
+				
+				return
+			}
+
+			dungeon, err := utils.GetPlayerCurrentStartedDungeon(authorId)
+
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, utils.ErrorMessage("Bot Error", "Couldn't find your character"))
+				s.AddHandlerOnce(dungeonTileMove)
+
+				return
+			}
+
+			tile, err := utils.GetFullTileInfo(dungeon.Id, Y, X)
+
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, utils.ErrorMessage("Bot Error", "Couldn't find this tile"))
+				s.AddHandlerOnce(dungeonTileMove)
+
+				return
+			}
+
+			tileInfo := utils.GenerateTileInfoDisplay(tile)
+
+			_, err = s.ChannelMessageSendEmbed(m.ChannelID, &discordgo.MessageEmbed{
+				Title: "Here's everything you need to know",
+				Description: tileInfo,
+				Color: 0x00ff99,
+				Footer: &discordgo.MessageEmbedFooter{
+					Text: "Player: " + m.Author.ID,
+				},
+			})
+
+			s.AddHandlerOnce(dungeonTileMove)
+			return
+		}
 
 		if messageSplit[0] != "-dungeon" || messageSplit[1] != "move" {
 			s.AddHandlerOnce(dungeonTileMove)

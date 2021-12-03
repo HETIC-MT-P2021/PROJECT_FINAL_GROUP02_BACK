@@ -1,23 +1,18 @@
 package utils
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/SteakBarbare/RPGBot/game"
 )
 
 func handleTileToDisplayString(tile game.DungeonTile) string {
-	var tileDisplayString string
-
-	playerD := " P"
-	wallD:= "####"
-	unknownD := "?????"
-	exitD := "EXT"
-	eventD := "EV"
-	monsterD := "M"
-	spaceD := "  "
-	halfSpaceD := " "
-	emptyD := "            "
+	playerD := "P"
+	wallD:= "#"
+	unknownD := " ? "
+	exitD := "E"
+	emptyD := "  "
 
 	
 	if tile.IsImpassable {
@@ -29,34 +24,18 @@ func handleTileToDisplayString(tile game.DungeonTile) string {
 	}
 
 	if tile.IsExit {
-		tileDisplayString += exitD
-	}
-
-	if len(tile.Entities) > 0 {
-		tileDisplayString += strconv.Itoa(len(tile.Entities)) + monsterD
-	}
-
-	if len(tile.Events) > 0 {
-		tileDisplayString += strconv.Itoa(len(tile.Events)) + eventD
+		return exitD
 	}
 
 	if len(tile.Characters) > 0 {
-		tileDisplayString += strconv.Itoa(len(tile.Characters)) + playerD
+		return playerD
 	}
 
-	if len(tileDisplayString) == 0 {
-		return emptyD
+	if len(tile.Entities) > 0 || len(tile.Events) > 0 {
+		return strconv.Itoa(len(tile.Entities) + len(tile.Events))
 	}
 
-	if len(tileDisplayString) < 4 {
-		return spaceD + tileDisplayString + spaceD
-	}
-
-	if len(tileDisplayString) == 4 {
-		return halfSpaceD + tileDisplayString + halfSpaceD
-	}
-
-	return tileDisplayString
+	return emptyD
 }
 
 func DungeonTilesToString(dungeonTiles []game.DungeonTile) string {
@@ -80,4 +59,69 @@ func DungeonTilesToString(dungeonTiles []game.DungeonTile) string {
 	}
 
 	return dungeonDisplay
+}
+
+func GenerateTileInfoDisplay(tile game.DungeonTile) string {
+	var characterNames string
+	var entityNames string
+	var eventDisplay string
+	var exitString string
+
+	if tile.IsDiscovered {
+		if len(tile.Characters) > 0 {
+			for _, character := range tile.Characters {
+				characterNames += character.Name + ", "
+			}
+		} else {
+			characterNames = "no one here"
+		}
+	
+		if len(tile.Entities) > 0 {
+			for _, entity := range tile.Entities {
+				entityNames += entity.Name + ", "
+			}
+		} else {
+			entityNames = "no entity here"
+		}
+
+		if len(tile.Events) > 0 {
+			for _, event := range tile.Events {
+				wasActivatedDisplay := "Not yet activated"
+
+				if event.WasActivated {
+					wasActivatedDisplay = "Was activated"
+				}
+
+				isAlwaysActiveDisplay := "Won't reactivate after discovery"
+
+				if event.IsAlwaysActive {
+					isAlwaysActiveDisplay = "Will reactivate each time"
+				}
+
+				eventDisplay += "\n -" + event.Name + ", " + event.Description + ", " + wasActivatedDisplay + ", " + isAlwaysActiveDisplay + "\n"
+			}
+		} else {
+			eventDisplay = "No events here"
+		}
+
+		if tile.IsExit {
+			exitString = "Yes !"
+		} else {
+			exitString = "No !"
+		}
+	} else {
+		entityNames, characterNames, eventDisplay, exitString = "Unknown", "Unknown", "Unknown", "Unknown"
+	}
+	
+	return fmt.Sprintln(
+		"**ID:** ", strconv.Itoa(tile.Id),
+		"**X:** ", strconv.Itoa(tile.X),
+		"**Y:** ", strconv.Itoa(tile.Y),
+		"\n**Characters present: ** ", characterNames,
+		"\n**Entities present: ** ", entityNames,
+		"\n**Events: ** ", eventDisplay,
+		"\n**Is tile explored: ** ", strconv.FormatBool(tile.IsDiscovered),
+		"\n**Is this a wall: ** ", strconv.FormatBool(tile.IsImpassable),
+		"\n**Is this the Exit: ** ", exitString,
+	)
 }
