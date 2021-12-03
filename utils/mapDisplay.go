@@ -9,7 +9,7 @@ import (
 func handleTileToDisplayString(tile game.DungeonTile) string {
 	var tileDisplayString string
 
-	playerD := "P"
+	playerD := " P"
 	wallD:= "####"
 	unknownD := "?????"
 	exitD := "EXT"

@@ -10,12 +10,12 @@ import (
 
 func InsertEvent(event game.Event) (int, error) {
 	query := `INSERT INTO event
-			(event_type, name, description, is_always_active, was_activated)
-			VALUES ($1, $2, $3, $4, $5) RETURNING event_id;`
+			(event_model_id, category_id, name, description, is_always_active, was_activated)
+			VALUES ($1, $2, $3, $4, $5, $6) RETURNING event_id;`
 
 	var eventId int
 
-	err := database.DB.QueryRow(query, event.EventType, event.Name, event.Description,
+	err := database.DB.QueryRow(query, event.EventModelId, event.CategoryId, event.Name, event.Description,
 		event.IsAlwaysActive, event.WasActivated).Scan(&eventId)
 
 	if err != nil {
@@ -36,6 +36,21 @@ func LinkEventTile(eventId, tileId int) error {
 	if err != nil {
 		log.Println(err)
 		return errors.New("Event could not be linked")
+	}
+
+	return nil
+}
+
+func UpdateEventWasActivated(eventId int) (error) {
+	query := `UPDATE event 
+	 SET was_activated = true
+	 WHERE event_id=$1`
+
+	_, err := database.DB.Exec(query, eventId)
+
+	if err != nil {
+		log.Println(err)
+		return errors.New("Event could not be set activated")
 	}
 
 	return nil
