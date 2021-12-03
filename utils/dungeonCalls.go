@@ -256,7 +256,7 @@ func GetTileEntities(tileId int) ([]game.EntityInstance, error) {
 
 	query := `SELECT 
 	 l.entity_instance_id,
-	 e.entity_model_id, e.precision, e.strength, e.endurance, e.agility, e.hitpoints, e.chosen_action_id
+	 e.entity_model_id, e.precision, e.strength, e.endurance, e.agility, e.hitpoints, e.chosen_action_id, e.is_alive
 	 FROM link_entity_tile l 
 	 INNER JOIN entity_instance e ON l.entity_instance_id = e.entity_instance_id
    	 WHERE tile_id=$1`;
@@ -271,7 +271,7 @@ func GetTileEntities(tileId int) ([]game.EntityInstance, error) {
 		var entity game.EntityInstance
 
 		if err = rows.Scan(&entity.Id, &entity.ModelId, &entity.Precision,
-			&entity.Strength, &entity.Endurance, &entity.Agility, &entity.Hitpoints, &entity.ChosenActionId); err != nil {
+			&entity.Strength, &entity.Endurance, &entity.Agility, &entity.Hitpoints, &entity.ChosenActionId, &entity.IsAlive); err != nil {
 			return entities, err
 		}
 

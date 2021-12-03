@@ -94,7 +94,7 @@ func InititalizeRoutes() {
 }
 
 func StartServer() {
-	apiPort := os.Getenv("DOCKER_API_PORT")
+	apiPort := os.Getenv("API_PORT")
 	fmt.Println("Socketio server started at http://localhost:" + apiPort)
 	log.Fatal(http.ListenAndServe(`:` + apiPort, handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Access-Control-Allow-Origin", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(router)))
 }

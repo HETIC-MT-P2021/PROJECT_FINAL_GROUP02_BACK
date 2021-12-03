@@ -195,7 +195,7 @@ func ActivateDebuffEvent(event game.Event, character game.Character, characterTi
 
 		updatedCharacter.Strength -= 15
 
-		err = UpdateCharPrecision(updatedCharacter)
+		err = UpdateCharStrength(updatedCharacter)
 
 		if err != nil {
 			return updatedCharacter, err
@@ -205,7 +205,7 @@ func ActivateDebuffEvent(event game.Event, character game.Character, characterTi
 	case consts.DebuffStrengthEffectEvent.EventModelId:
 		updatedCharacter.Strength -= 15
 
-		err = UpdateCharPrecision(updatedCharacter)
+		err = UpdateCharStrength(updatedCharacter)
 
 		if err !=nil {
 			return updatedCharacter, err
@@ -287,10 +287,6 @@ func ActivateTileEvent(characterTile game.DungeonTile, tiles []game.DungeonTile,
 	var err error
 	var eventActivationDescription string
 
-	log.Println("Activate tile event")
-	log.Println(event)
-	log.Println(character)
-
 	updatedDungeonTiles := tiles
 
 	switch event.CategoryId {
@@ -340,8 +336,6 @@ func ActivateTileEvent(characterTile game.DungeonTile, tiles []game.DungeonTile,
 	updatedDungeonTiles = UpdateCharacterInDungeonTiles(character, characterTile.Id, updatedDungeonTiles)
 
 	if !event.WasActivated {
-		log.Println("Activate")
-		log.Println(event.Id)
 		updatedDungeonTiles = domain.SetEventWasActivatedInTiles(updatedDungeonTiles, event, characterTile)
 
 		err := UpdateEventWasActivated(event.Id)
@@ -429,7 +423,6 @@ func HandleNewTileEvents(dungeonTiles []game.DungeonTile, s *discordgo.Session, 
 			stringToDisplay := "Someone is lurking is the shadows"
 
 			for i, entity := range characterTile.Entities {
-				log.Println(entity)
 
 				if i == 0 {
 					stringToDisplay += ", it's a "

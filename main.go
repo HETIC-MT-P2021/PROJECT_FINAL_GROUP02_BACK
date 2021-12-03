@@ -32,8 +32,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(cfg)
-
 	database.Connect(cfg)
 
 	// Start socketio connection
