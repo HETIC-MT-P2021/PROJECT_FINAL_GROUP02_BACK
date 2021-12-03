@@ -5,12 +5,13 @@ import (
 	"math/rand"
 
 	"github.com/SteakBarbare/RPGBot/database"
+	"github.com/SteakBarbare/RPGBot/game"
 	"github.com/SteakBarbare/RPGBot/utils"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-func FightAttack(s *discordgo.Session, channelID string) {
+func FightAttack(s *discordgo.Session, channelID string, isDodging bool) {
 	currentDuel, err := utils.GetActiveDuel()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -40,12 +41,20 @@ func FightAttack(s *discordgo.Session, channelID string) {
 		defenderChar := challengedChar
 		attackerName, _ := utils.FindCharNameWithId(int(currentDuelPlayers.ChallengerChar.Int32))
 		defenderName, _ := utils.FindCharNameWithId(int(currentDuelPlayers.ChallengedChar.Int32))
+		attackerPrecisionGoal := attackerChar.Precision
+
+		if(isDodging){
+			utils.UpdateDodgeState(1, int(currentDuelPlayers.ChallengerChar.Int32))
+			attackerPrecisionGoal = attackerPrecisionGoal / 2
+		}
+
 		// Check if the attacker can hit is attack
 		attackerPrecision := (rand.Intn(99) + 1)
 		s.ChannelMessageSend(channelID, fmt.Sprintln(attackerName, " Rolled ", attackerPrecision, " for it's precision"))
-		s.ChannelMessageSend(channelID, fmt.Sprintln(attackerName, " Current precision is", attackerChar.Precision))
+		s.ChannelMessageSend(channelID, fmt.Sprintln(attackerName, " Current precision is", attackerPrecisionGoal))
 		// Apply damage if a hit is scored
-		if(attackerPrecision <= challengedChar.Precision){
+		if(attackerPrecision <= challengedChar.Precision && !dodgeResolution(attackerChar, defenderChar, attackerName, defenderName, s, channelID)){
+			
 			damageDealt := ((rand.Intn(9) + 1) + (attackerChar.Strength / 10)) - (defenderChar.Endurance/10)
 			remainingHitpoints := (defenderChar.Hitpoints - damageDealt)
 			defenderChar.Hitpoints -= damageDealt
@@ -89,12 +98,20 @@ func FightAttack(s *discordgo.Session, channelID string) {
 		defenderChar := challengerChar
 		attackerName, _ := utils.FindCharNameWithId(int(currentDuelPlayers.ChallengedChar.Int32))
 		defenderName, _ := utils.FindCharNameWithId(int(currentDuelPlayers.ChallengerChar.Int32))
+
+		attackerPrecisionGoal := attackerChar.Precision
+
+		if(isDodging){
+			utils.UpdateDodgeState(1, int(currentDuelPlayers.ChallengedChar.Int32))
+			attackerPrecisionGoal = attackerPrecisionGoal / 2
+		}
+
 		// Check if the attacker can hit is attack
 		attackerPrecision := (rand.Intn(99) + 1)
 		s.ChannelMessageSend(channelID, fmt.Sprintln(attackerName, " Rolled ", attackerPrecision, " for it's precision"))
-		s.ChannelMessageSend(channelID, fmt.Sprintln(attackerName, " Current precision is", attackerChar.Precision))
+		s.ChannelMessageSend(channelID, fmt.Sprintln(attackerName, " Current precision is", attackerPrecisionGoal))
 		// Apply damage if a hit is scored
-		if(attackerPrecision <= challengedChar.Precision){
+		if(attackerPrecision <= challengedChar.Precision && !dodgeResolution(attackerChar, defenderChar, attackerName, defenderName, s, channelID)){
 			damageDealt := ((rand.Intn(9) + 1) + (attackerChar.Strength / 10)) - (defenderChar.Endurance/10)
 			remainingHitpoints := (defenderChar.Hitpoints - damageDealt)
 			defenderChar.Hitpoints -= damageDealt
@@ -133,7 +150,29 @@ func FightAttack(s *discordgo.Session, channelID string) {
 			s.AddHandlerOnce(FightTurnOptions)
 		}
 	}
+}
 
-	
+
+func dodgeResolution(attackerChar *game.Character, defenderChar *game.Character, attackerName string, defenderName string, s *discordgo.Session, channelID string) (bool){
+
+	if(defenderChar.ChosenActionId != 1){
+		return false
+	}
+
+	defenderDodge := (rand.Intn(99) + 1)
+	s.ChannelMessageSend(channelID, fmt.Sprintln(defenderName, " Rolled a ", defenderDodge, " with an agility stat of ", defenderChar.Agility))
+	if(defenderDodge <= defenderChar.Agility){
+		s.ChannelMessageSend(channelID, fmt.Sprintln(defenderName, " Successfully dodged the blow"))
+		return true
+	}else{
+		s.ChannelMessageSend(channelID, fmt.Sprintln(defenderName, " Failed to dodge the blow"))
+		return false
+	}
+
 
 }
+
+func damageResolution(attackerChar *game.Character, defenderChar *game.Character, attackerName string, defenderName string){
+
+}
+

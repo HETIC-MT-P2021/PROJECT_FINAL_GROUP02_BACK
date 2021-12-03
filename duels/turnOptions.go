@@ -46,8 +46,9 @@ func FightTurnOptions(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}else{
 		switch m.Content {
 			case "-fight Attack":
-				FightAttack(s, m.ChannelID)
+				FightAttack(s, m.ChannelID, false)
 			case "-fight Dodge":
+				FightAttack(s, m.ChannelID, true)
 			case "-fight Flee":
 		}
 	}

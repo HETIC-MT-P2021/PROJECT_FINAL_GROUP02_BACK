@@ -184,3 +184,17 @@ func UpdateCharacterFightinhStats(character game.Character) error {
 
 	return nil
 }
+
+func UpdateDodgeState(dodgeValue int, characterId int)(error){
+	updateCharQuery := `UPDATE character
+	SET chosen_action_id = $1
+	WHERE character_id=$2`
+	_, err := database.DB.Exec(updateCharQuery, dodgeValue, characterId)
+
+	if err != nil {
+		log.Println(err)
+		return errors.New("Dodge failed to be updated")
+	}else{
+		return nil
+	}
+}
