@@ -9,6 +9,7 @@ import (
 	"github.com/SteakBarbare/RPGBot/database"
 	"github.com/SteakBarbare/RPGBot/utils"
 	"github.com/bwmarrin/discordgo"
+	"github.com/SteakBarbare/RPGBot/socketio"
 )
 
 
@@ -360,6 +361,11 @@ func dungeonTileMove(s *discordgo.Session, m *discordgo.MessageCreate){
 			return
 		}
 
+		dungeon, err := utils.GetPlayerCurrentStartedDungeon(authorId)
+		if err != nil {
+			log.Println(err)
+		}
+
 		newMapString := utils.DungeonTilesToString(newDungeonTiles)
 
 		if !wasTileAlreadyDiscovered {
@@ -385,6 +391,8 @@ func dungeonTileMove(s *discordgo.Session, m *discordgo.MessageCreate){
 
 			return
 		}
+
+		socketio.UpdateDungeonTiles(dungeon.Id)
 
 		s.ChannelMessageSend(m.ChannelID, "\n\n What's your next move ?")
 
