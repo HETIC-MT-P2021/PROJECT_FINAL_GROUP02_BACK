@@ -38,7 +38,23 @@ func DuelController(s *discordgo.Session, channelID string, involvedPlayers []st
 		fmt.Println(err.Error())
 	}
 
-	FightOptionsInfo(s, channelID)
+	currentDuelPlayers, err := utils.GetDuelPlayers(currentDuel.Id)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+		
+	var playingChar int32
+
+	// Get the corresponding character
+	if(initialSetup.ActiveFighter == currentDuelPlayers.Challenger){
+		playingChar = currentDuelPlayers.ChallengerChar.Int32
+	}else{
+		playingChar = currentDuelPlayers.ChallengedChar.Int32
+
+	}
+
+
+	FightOptionsInfo(s, channelID, initialSetup.ActiveFighter, playingChar)
 }
 
 // Load Duel Infos
@@ -64,33 +80,36 @@ func rollInitiative(duelSetup *game.DuelBattle, s *discordgo.Session, channelID 
 		return "0", errors.New("Duel data not found")
 	}
 
-	challengerChar, err := utils.GetBattleCharacterById(currentDuelPlayers.ChallengerChar)
+	challengerChar, err := utils.GetCharacterById(int(currentDuelPlayers.ChallengerChar.Int32))
 	if err != nil {
 		return "0", errors.New("Challenger character not found")
 	}
-	challengedChar, err := utils.GetBattleCharacterById(currentDuelPlayers.ChallengedChar)
+	challengedChar, err := utils.GetCharacterById(int(currentDuelPlayers.ChallengedChar.Int32))
 	if err != nil {
 		return "0", errors.New("Challenged character not found")
 	}
 
+	challengerCharacterName, _ := utils.FindCharNameWithId(int(currentDuelPlayers.ChallengerChar.Int32))
+	challengedCharacterName, _ := utils.FindCharNameWithId(int(currentDuelPlayers.ChallengedChar.Int32))
+
 	challengerInitiative := challengerChar.Agility + (rand.Intn(9) + 1)
 	challengedInitiative := challengedChar.Agility + (rand.Intn(9) + 1)
-	s.ChannelMessageSend(channelID, fmt.Sprintln(challengerChar.Name, " Rolled ", challengerInitiative, " for it's initiative"))
-	s.ChannelMessageSend(channelID, fmt.Sprintln(challengedChar.Name, " Rolled ", challengedInitiative, " for it's initiative"))
+	s.ChannelMessageSend(channelID, fmt.Sprintln(challengerCharacterName, " Rolled ", challengerInitiative, " for it's initiative"))
+	s.ChannelMessageSend(channelID, fmt.Sprintln(challengedCharacterName, " Rolled ", challengedInitiative, " for it's initiative"))
 
 	if challengerInitiative > challengedInitiative {
-		s.ChannelMessageSend(channelID, fmt.Sprintln(challengerChar.Name, " will play first"))
+		s.ChannelMessageSend(channelID, fmt.Sprintln(challengerCharacterName, " will play first"))
 		return duelSetup.Challengers[0], nil
 	} else if challengedInitiative > challengerInitiative {
-		s.ChannelMessageSend(channelID, fmt.Sprintln(challengedChar.Name, " will play first"))
+		s.ChannelMessageSend(channelID, fmt.Sprintln(challengedCharacterName, " will play first"))
 		return duelSetup.Challengers[1], nil
 	} else {
 		s.ChannelMessageSend(channelID, "Tie ! Choosing at random who will have the initiative...")
 		if rand.Intn(10) < 5 {
-			s.ChannelMessageSend(channelID, fmt.Sprintln(challengerChar.Name, " will play first"))
+			s.ChannelMessageSend(channelID, fmt.Sprintln(challengerCharacterName, " will play first"))
 			return duelSetup.Challengers[0], nil
 		} else {
-			s.ChannelMessageSend(channelID, fmt.Sprintln(challengedChar.Name, " will play first"))
+			s.ChannelMessageSend(channelID, fmt.Sprintln(challengedCharacterName, " will play first"))
 			return duelSetup.Challengers[1], nil
 		}
 	}

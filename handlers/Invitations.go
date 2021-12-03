@@ -120,20 +120,20 @@ func duelInvitationHandler(s *discordgo.Session, r *discordgo.MessageReactionAdd
 
 		duelPreparationId := 0
 
-		err = database.DB.QueryRow(`INSERT INTO duelPreparation (selectingPlayer, isReady, isOver, turn) VALUES ($1, $2, 'false', 0) RETURNING id`, opponents[1], 0).Scan(&duelPreparationId)
+		err = database.DB.QueryRow(`INSERT INTO duelpreparation (selectingplayer, isready, isover, turn) VALUES ($1, $2, 'false', 0) RETURNING id`, opponents[1], 0).Scan(&duelPreparationId)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
 
-		_, err = database.DB.Exec(`INSERT INTO duelPlayers (preparationId, challenger, challenged, challengerChar, challengedChar) VALUES ($1, $2, $3, $4, $5)`, duelPreparationId, opponents[1], opponents[0], "", "")
+		_, err = database.DB.Exec(`INSERT INTO duelPlayers (preparationid, challenger, challenged, challengerchar, challengedchar) VALUES ($1, $2, $3, $4, $5)`, duelPreparationId, opponents[1], opponents[0], nil, nil)
 
 		if err != nil {
 			fmt.Println(err.Error())
 		}
 
 		s.ChannelMessageSend(r.ChannelID, utils.SuccessMessage("Game on!", utils.FormatUser(user)+" accepted your duel invite ! Now select a character to send in the arena."))
-		//chooseCharacterBase(s, m.ChannelID, opponents, 0)
-		s.AddHandlerOnce(chooseCharacter)
+		// selectCharacterBase(s, m.ChannelID, opponents, 0)
+		s.AddHandlerOnce(selectCharacter)
 
 		// Send a message to tell the invitation was declined otherwise
 	} else if !general && r.Emoji.Name == "❌" && !utils.HasOtherReactionsBesides("❌", m.Reactions) {

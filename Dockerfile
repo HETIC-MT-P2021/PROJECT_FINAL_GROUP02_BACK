@@ -1,13 +1,16 @@
-FROM golang:1.13-alpine
+FROM golang:1.15-alpine
 
-LABEL maintainer="Croto de le Four al Fakhouri"
+RUN apk add --no-cache git
+RUN mkdir /app
 
-# Set the working directory inside the container
-WORKDIR /go/src
-# Copy the full project to current directory
-COPY . .
-# Run command to install dependencies
-RUN apk add git
-RUN go mod download
+# Add Maintainer Info
+LABEL maintainer="Team Lambert"
 
-EXPOSE 8080
+ADD . /app
+WORKDIR /app
+
+RUN go get
+RUN go mod vendor
+RUN go build -o main .
+
+CMD ["./main"]
