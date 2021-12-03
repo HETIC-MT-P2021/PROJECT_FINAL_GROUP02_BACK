@@ -9,6 +9,7 @@ import (
 	"github.com/SteakBarbare/RPGBot/database"
 	"github.com/SteakBarbare/RPGBot/utils"
 	"github.com/bwmarrin/discordgo"
+	"github.com/SteakBarbare/RPGBot/socketio"
 )
 
 
@@ -197,6 +198,8 @@ func selectDunjeonToPlay(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		dungeonString := utils.DungeonTilesToString(dungeonTiles)
 
+		frontUrl := `You can access the dungeon map here at http://localhost:3000/` + m.Content
+		
 		instructionString := `
 		You can now select where you want to go with:
 		 -dungeon move [left, right, top, bot]
@@ -209,7 +212,7 @@ func selectDunjeonToPlay(s *discordgo.Session, m *discordgo.MessageCreate) {
 		On the exit tile, you will be able to leave with:
 		 -dungeon exit`
 
-		s.ChannelMessageSend(m.ChannelID, "Successfully found the dungeon, here's the current map of it ! \n\n"+ dungeonString + instructionString)
+		s.ChannelMessageSend(m.ChannelID, "Successfully found the dungeon, here's the current map of it ! \n\n"+ dungeonString + frontUrl + instructionString)
 
 		s.AddHandlerOnce(dungeonTileMove)
 
@@ -360,6 +363,11 @@ func dungeonTileMove(s *discordgo.Session, m *discordgo.MessageCreate){
 			return
 		}
 
+		dungeon, err := utils.GetPlayerCurrentStartedDungeon(authorId)
+		if err != nil {
+			log.Println(err)
+		}
+
 		newMapString := utils.DungeonTilesToString(newDungeonTiles)
 
 		if !wasTileAlreadyDiscovered {
@@ -385,6 +393,8 @@ func dungeonTileMove(s *discordgo.Session, m *discordgo.MessageCreate){
 
 			return
 		}
+
+		socketio.UpdateDungeonTiles(dungeon.Id)
 
 		s.ChannelMessageSend(m.ChannelID, "\n\n What's your next move ?")
 

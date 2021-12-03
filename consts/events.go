@@ -7,7 +7,7 @@ var DamageCategoryId = 0
 var PermanentDamageTrapEvent = game.Event{
 	EventModelId: 0,
 	CategoryId: DamageCategoryId,
-	Name: "Trap",
+	Name: "Permanent Trap",
 	Description: "The room is poisoned! You lose 1 HP",
 	IsAlwaysActive:	true,
 	WasActivated: false,
