@@ -78,17 +78,20 @@ func FightAttack(s *discordgo.Session, channelID string, isDodging bool) {
 					fmt.Println(err.Error())
 				}
 
+				utils.UpdateDodgeState(0, int(currentDuelPlayers.ChallengedChar.Int32))
 				s.ChannelMessageSend(channelID, fmt.Sprintln(defenderName, " It is now your turn to play"))
 				s.AddHandlerOnce(FightTurnOptions)
 			}
 		// Just begin a new turn if the attacker has missed his attack	
 		}else{
+			
 			s.ChannelMessageSend(channelID, fmt.Sprintln(attackerName, "miss", defenderName))
 			_, err = database.DB.Exec(`UPDATE duelPreparation SET selectingPlayer=$1 WHERE id=$2;`, defender, currentDuel.Id)
 			if err != nil {
 				fmt.Println(err.Error())
 			}
 
+			utils.UpdateDodgeState(0, int(currentDuelPlayers.ChallengedChar.Int32))
 			s.ChannelMessageSend(channelID, fmt.Sprintln(defenderName, " It is now your turn to play"))
 			s.AddHandlerOnce(FightTurnOptions)
 		}
@@ -135,6 +138,7 @@ func FightAttack(s *discordgo.Session, channelID string, isDodging bool) {
 					fmt.Println(err.Error())
 				}
 
+				utils.UpdateDodgeState(0, int(currentDuelPlayers.ChallengerChar.Int32))
 				s.ChannelMessageSend(channelID, fmt.Sprintln(defenderName, " It is now your turn to play"))
 				s.AddHandlerOnce(FightTurnOptions)
 			}
@@ -146,6 +150,7 @@ func FightAttack(s *discordgo.Session, channelID string, isDodging bool) {
 				fmt.Println(err.Error())
 			}
 
+			utils.UpdateDodgeState(0, int(currentDuelPlayers.ChallengerChar.Int32))
 			s.ChannelMessageSend(channelID, fmt.Sprintln(defenderName, " It is now your turn to play"))
 			s.AddHandlerOnce(FightTurnOptions)
 		}
@@ -158,7 +163,7 @@ func dodgeResolution(attackerChar *game.Character, defenderChar *game.Character,
 	if(defenderChar.ChosenActionId != 1){
 		return false
 	}
-
+	
 	defenderDodge := (rand.Intn(99) + 1)
 	s.ChannelMessageSend(channelID, fmt.Sprintln(defenderName, " Rolled a ", defenderDodge, " with an agility stat of ", defenderChar.Agility))
 	if(defenderDodge <= defenderChar.Agility){
