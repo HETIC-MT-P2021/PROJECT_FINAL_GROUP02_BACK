@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS duelPlayers(
     preparationId INT NOT NULL,
     challenger VARCHAR(255) NOT NULL,
 	challenged VARCHAR(255) NOT NULL,
-    challengerChar VARCHAR(255),
-	challengedChar VARCHAR(255)
+    challengerChar INT,
+	challengedChar INT
 );
 
 CREATE TABLE IF NOT EXISTS dungeon(
